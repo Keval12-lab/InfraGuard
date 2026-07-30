@@ -1,0 +1,9 @@
+{
+  "name": "@infraguard/backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": ".\\.venv\\Scripts\\python.exe -m flask --app app run --host localhost --port 5000 --debug",
+    "init": "python -m venv .venv && .venv\\Scripts\\python.exe -m pip install -r requirements.txt"
+  }
+}
