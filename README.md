@@ -1,17 +1,25 @@
 # InfraGuard
 
-InfraGuard is an enterprise-grade, high-performance IT Infrastructure Visibility Platform designed for defensive asset discovery, structured inventory management, real-time status monitoring, network topology tracing, interactive troubleshooter runbooks, and automated health audits.
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB.svg)
+![React](https://img.shields.io/badge/React-19-61DAFB.svg)
+![Flask](https://img.shields.io/badge/Flask-3.x-000000.svg)
+![Release](https://img.shields.io/badge/Release-v1.0.0--RC1-green.svg)
+
+> **Enterprise IT Infrastructure Visibility Platform** built with React, Flask, SQLite, and Network Discovery Engines.
+
+InfraGuard is a high-performance IT Infrastructure Visibility Platform designed for defensive asset discovery, structured inventory management, real-time status monitoring, network topology tracing, interactive troubleshooter runbooks, and automated health audits.
 
 ---
 
-## 🚀 Key Capabilities
+## ⭐ Highlights
 
-- **Defensive Network Discovery:** Scan subnets, discover active network entities, and auto-detect vendor types with zero-overhead ICMP/ARP diagnostics.
-- **Infrastructure Passports:** Store physical configurations (building, room, rack, unit slot) and business parameters (owner, AMC contract, warranty, technical contact) for each hardware unit.
-- **Interactive Runbooks:** Establish branching troubleshooter templates to guide operators through manual and automated recovery sequences (e.g. Ping tests, TCP port probes, Wake-on-LAN packets).
-- **Structured Audit Logging:** Maintain SIEM-ready audit streams logging system-wide alerts, authentication logs, and console commands.
-- **60FPS Modular Topology View:** Pan, zoom, and inspect network layouts smoothly. Built with isolated React Hooks managing viewport transformations and an optimized rendering layer utilizing `window.requestAnimationFrame` to directly update SVG DOM components, eliminating React state lag during node drag interactions.
-- **Enterprise Database Facade:** SQLite persistent storage refactored into domain-separated repositories (Assets, SNMP, Runbooks, Automations, Passports) beneath a clean proxy API.
+- **Defensive Network Discovery:** Subnet scanner detecting active network entities with zero-overhead ICMP/ARP probes.
+- **Interactive Topology Visualization:** 60FPS pan-and-zoom layout engine using isolated React hooks and `window.requestAnimationFrame` DOM state commits.
+- **Infrastructure Passports:** Structured physical location tags (building, rack, slot) and contract parameters (AMC, warranty, lifecycle).
+- **Interactive Troubleshooter Runbooks:** Sequence-guided diagnostic templates (Ping probes, TCP socket checks, Wake-on-LAN broadcasts).
+- **Modular Database Facade:** Clean repository pattern separating domain modules (Assets, SNMP, Runbooks, Passports) behind `database/db.py`.
+- **Production Diagnostic Telemetry:** Standardized `/api/health`, `/api/version`, and `/api/system` telemetry endpoints with CORS protection.
 
 ---
 
@@ -21,19 +29,19 @@ The diagram below outlines the runtime data flow and separation of concerns insi
 
 ```mermaid
 graph TD
-    subgraph UI Layer (React 19)
+    subgraph UI ["UI Layer (React 19)"]
         A[Dashboard & Viewports] -->|Calls Hooks| B[useTopologySelection]
         A -->|Calls Hooks| C[useViewport]
         A -->|Calls Hooks| D[useTopologyInteraction]
         D -->|RAF Direct DOM Update| E[SVG Canvas Render]
     end
 
-    subgraph Service API Layer (Flask)
+    subgraph Service ["Service API Layer (Flask)"]
         B & C & D -->|HTTP REST Requests| F[Flask API Blueprints]
         F -->|Request Origin Verification| G[CORS Middleware]
     end
 
-    subgraph Database Layer (SQLite)
+    subgraph Database ["Database Layer (SQLite)"]
         F -->|Facade Calls| H[database/db.py proxy]
         H -->|Queries| I[core.py]
         H -->|Queries| J[assets.py]
@@ -52,7 +60,7 @@ graph TD
 ### Prerequisites
 
 - Node.js 20+
-- Python 3.12+ (or Python 3.13+)
+- Python 3.12+
 
 ### 1. Project Installation
 
@@ -101,10 +109,11 @@ npm run build:frontend
 npm run verify
 ```
 
-To run python database verification suites:
+To run python database and endpoint verification suites:
 
 ```powershell
 backend\.venv\Scripts\python.exe tests/test_db_split.py
+backend\.venv\Scripts\python.exe tests/test_endpoints.py
 ```
 
 ---
@@ -113,42 +122,44 @@ backend\.venv\Scripts\python.exe tests/test_db_split.py
 
 ### Backend Deployment (Render)
 
-1.  Connect your GitHub repository to your Render dashboard.
-2.  Create a new **Web Service**.
-3.  Set the environment settings:
-    - **Runtime:** `Python`
-    - **Build Command:** `pip install -r backend/requirements.txt`
-    - **Start Command:** `gunicorn --chdir backend app:app`
-4.  Configure Environment Variables:
-    - `FLASK_ENV=production`
-    - `CORS_WHITELIST=https://your-frontend.vercel.app`
+1. Connect your GitHub repository to your Render dashboard.
+2. Create a new **Web Service**.
+3. Set the environment settings:
+   - **Runtime:** `Python`
+   - **Build Command:** `pip install -r backend/requirements.txt`
+   - **Start Command:** `gunicorn --chdir backend app:app` (or `gunicorn --chdir backend "app:create_app()"`)
+4. Configure Environment Variables:
+   - `FLASK_ENV=production`
+   - `DATABASE_PATH=/opt/infraguard/instance/infraguard.db`
+   - `CORS_WHITELIST=https://your-frontend.vercel.app`
+5. Attach a 1 GB Persistent Volume mounted at `/opt/infraguard/instance`.
 
 ### Frontend Deployment (Vercel)
 
-1.  Connect your GitHub repository to your Vercel project dashboard.
-2.  Set the project settings:
-    - **Framework Preset:** `Vite`
-    - **Root Directory:** `frontend`
-    - **Build Command:** `npm run build`
-    - **Output Directory:** `dist`
-3.  Configure Environment Variables:
-    - `VITE_API_URL=https://your-backend.onrender.com`
+1. Connect your GitHub repository to your Vercel project dashboard.
+2. Set the project settings:
+   - **Framework Preset:** `Vite`
+   - **Root Directory:** `frontend`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+3. Configure Environment Variables:
+   - `VITE_API_URL=https://your-backend.onrender.com`
 
 ---
 
 ## 🔗 Live Demo
 
-Once deployed, the live application and diagnostic endpoints can be accessed at:
+> **Deployment Status:** Release Candidate `v1.0.0-RC1` ready for production deployment. Live URLs will be updated post-hosting.
 
-- **Frontend Webapp:** [https://infraguard.vercel.app](https://infraguard.vercel.app)
-- **Backend Base API:** [https://infraguard-api.onrender.com](https://infraguard-api.onrender.com)
+- **Frontend Webapp:** _Deployment Pending_
+- **Backend Base API:** _Deployment Pending_
 - **API Telemetry & Diagnostics:**
-  - Health Audit: [https://infraguard-api.onrender.com/api/health](https://infraguard-api.onrender.com/api/health)
-  - Release Version: [https://infraguard-api.onrender.com/api/version](https://infraguard-api.onrender.com/api/version)
-  - System Diagnostics: [https://infraguard-api.onrender.com/api/system](https://infraguard-api.onrender.com/api/system)
+  - Health Audit: `/api/health`
+  - Release Version: `/api/version`
+  - System Diagnostics: `/api/system`
 
 ---
 
 ## 📜 License
 
-Distributed under the MIT License. See [LICENSE](file:///e:/Development/Projects/InfraGuard/LICENSE) for details.
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.
