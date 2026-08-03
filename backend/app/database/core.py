@@ -4,12 +4,36 @@ import logging
 
 logger = logging.getLogger("infraguard.database")
 
-DB_PATH = os.getenv("DATABASE_PATH") or os.getenv("DATABASE_URL")
-if DB_PATH:
-    DB_DIR = os.path.dirname(DB_PATH)
-else:
-    DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "instance")
-    DB_PATH = os.path.join(DB_DIR, "infraguard.db")
+def resolve_database_path() -> tuple[str, str]:
+    configured_path = os.getenv("DATABASE_PATH") or os.getenv("DATABASE_URL")
+    if configured_path:
+        target_dir = os.path.dirname(configured_path)
+        try:
+            os.makedirs(target_dir, exist_ok=True)
+            print(f"[INFO] Using configured database path: {configured_path}")
+            logger.info(f"Using configured database path: {configured_path}")
+            return configured_path, target_dir
+        except (PermissionError, OSError) as err:
+            fallback_dir = os.path.join(os.getcwd(), "instance")
+            fallback_path = os.path.join(fallback_dir, "infraguard.db")
+            os.makedirs(fallback_dir, exist_ok=True)
+            msg = (
+                f"[WARNING] Configured database path '{configured_path}' is not writable ({err}).\n"
+                f"Falling back to local database: {fallback_path}"
+            )
+            print(msg)
+            logger.warning(msg)
+            return fallback_path, fallback_dir
+    else:
+        fallback_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "instance")
+        fallback_path = os.path.join(fallback_dir, "infraguard.db")
+        os.makedirs(fallback_dir, exist_ok=True)
+        print(f"[INFO] Using local database path: {fallback_path}")
+        logger.info(f"Using local database path: {fallback_path}")
+        return fallback_path, fallback_dir
+
+
+DB_PATH, DB_DIR = resolve_database_path()
 
 
 def get_db_connection():
