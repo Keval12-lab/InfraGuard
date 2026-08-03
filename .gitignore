@@ -14,8 +14,11 @@ coverage/
 
 # Local data and generated output
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
+backend/app/instance/
 reports/generated/
 sample_data/local/
 
