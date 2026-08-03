@@ -8,18 +8,31 @@
 
 > **Enterprise IT Infrastructure Visibility Platform** built with React, Flask, SQLite, and Network Discovery Engines.
 
-InfraGuard is a high-performance IT Infrastructure Visibility Platform designed for defensive asset discovery, structured inventory management, real-time status monitoring, network topology tracing, interactive troubleshooter runbooks, and automated health audits.
+InfraGuard is an IT Infrastructure Visibility Platform designed for defensive asset discovery, structured inventory management, real-time status monitoring, network topology tracing, interactive troubleshooter runbooks, and automated health audits.
 
 ---
 
-## ⭐ Highlights
+## ⭐ Highlights & Capabilities
 
 - **Defensive Network Discovery:** Subnet scanner detecting active network entities with zero-overhead ICMP/ARP probes.
-- **Interactive Topology Visualization:** 60FPS pan-and-zoom layout engine using isolated React hooks and `window.requestAnimationFrame` DOM state commits.
+- **Optimized Topology Visualization:** Responsive pan-and-zoom layout engine using isolated React hooks and `window.requestAnimationFrame` DOM state commits.
 - **Infrastructure Passports:** Structured physical location tags (building, rack, slot) and contract parameters (AMC, warranty, lifecycle).
 - **Interactive Troubleshooter Runbooks:** Sequence-guided diagnostic templates (Ping probes, TCP socket checks, Wake-on-LAN broadcasts).
 - **Modular Database Facade:** Clean repository pattern separating domain modules (Assets, SNMP, Runbooks, Passports) behind `database/db.py`.
 - **Production Diagnostic Telemetry:** Standardized `/api/health`, `/api/version`, and `/api/system` telemetry endpoints with CORS protection.
+
+### ✨ Module Matrix
+
+| Module                 | Status | Core Capability                                 |
+| :--------------------- | :----: | :---------------------------------------------- |
+| **Dashboard**          |   ✅   | System summary metrics & quick actions          |
+| **Network Discovery**  |   ✅   | Subnet entity discovery via ICMP/ARP probes     |
+| **Asset Inventory**    |   ✅   | Hardware configuration & passport location tags |
+| **Topology Mapping**   |   ✅   | Interactive RAF-driven SVG graph rendering      |
+| **Engineer Workspace** |   ✅   | ICMP ping, TCP port probe & WOL diagnostics     |
+| **SNMP Inspector**     |   ✅   | Interface, neighbor & VLAN telemetry            |
+| **Runbooks**           |   ✅   | Guided diagnostic recovery sequences            |
+| **SIEM Timeline Log**  |   ✅   | System audit event stream                       |
 
 ---
 
@@ -144,6 +157,13 @@ backend\.venv\Scripts\python.exe tests/test_endpoints.py
    - **Output Directory:** `dist`
 3. Configure Environment Variables:
    - `VITE_API_URL=https://your-backend.onrender.com`
+
+---
+
+## 📌 Known Limitations & Roadmap
+
+- **Database Engine**: SQLite is used by default for single-node deployments. PostgreSQL storage adapter support is planned for v1.1.
+- **Authentication**: Role-Based Access Control (RBAC) and JWT user sessions are scheduled for the v1.1 milestone.
 
 ---
 
