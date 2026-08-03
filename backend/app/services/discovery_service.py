@@ -73,6 +73,14 @@ def detect_local_subnet() -> Dict[str, Any]:
             "local_ip": None,
             "detected_cidr": None,
             "subnet_mask": None,
+            "default_gateway": None,
+            "primary_dns": None,
+            "secondary_dns": None,
+            "interface_name": None,
+            "interface_type": None,
+            "mac_address": None,
+            "hostname": None,
+            "internet_connected": False,
             "is_loopback": False,
             "message": "No active LAN adapter detected. Please specify target IPv4 CIDR range manually."
         }
@@ -81,22 +89,240 @@ def detect_local_subnet() -> Dict[str, Any]:
         ip_obj = ipaddress.ip_interface(f"{detected_ip}/24")
         network = ip_obj.network
         logger.info(f"Detected active local LAN subnet: {network} (Interface IP: {detected_ip})")
-        return {
+
+        enriched = {
             "local_ip": detected_ip,
             "detected_cidr": str(network),
             "subnet_mask": "255.255.255.0",
+            "default_gateway": _detect_gateway(),
+            "primary_dns": None,
+            "secondary_dns": None,
+            "interface_name": None,
+            "interface_type": None,
+            "mac_address": None,
+            "hostname": _detect_hostname(),
+            "internet_connected": _check_internet(),
             "is_loopback": False,
             "message": "Active LAN interface detected successfully."
         }
+
+        dns_servers = _detect_dns_servers()
+        enriched["primary_dns"] = dns_servers[0] if len(dns_servers) > 0 else None
+        enriched["secondary_dns"] = dns_servers[1] if len(dns_servers) > 1 else None
+
+        iface_name, iface_type, mac = _detect_interface_info(detected_ip)
+        enriched["interface_name"] = iface_name
+        enriched["interface_type"] = iface_type
+        enriched["mac_address"] = mac
+
+        logger.info(
+            f"Subnet enrichment complete — gateway={enriched['default_gateway']} "
+            f"dns={enriched['primary_dns']} iface={enriched['interface_name']} "
+            f"type={enriched['interface_type']} internet={enriched['internet_connected']}"
+        )
+        return enriched
+
     except Exception as e:
         logger.error(f"Error calculating subnet CIDR for {detected_ip}: {e}")
         return {
             "local_ip": detected_ip,
             "detected_cidr": f"{detected_ip}/24",
             "subnet_mask": "255.255.255.0",
+            "default_gateway": None,
+            "primary_dns": None,
+            "secondary_dns": None,
+            "interface_name": None,
+            "interface_type": None,
+            "mac_address": None,
+            "hostname": _detect_hostname(),
+            "internet_connected": False,
             "is_loopback": False,
             "message": "Subnet detected."
         }
+
+
+# ---------------------------------------------------------------------------
+# Private helper functions for subnet enrichment
+# ---------------------------------------------------------------------------
+
+def _detect_gateway() -> Optional[str]:
+    """Detect the default gateway using OS-native commands. Returns None on failure."""
+    try:
+        os_name = platform.system()
+        if os_name == "Windows":
+            result = subprocess.run(
+                ["ipconfig"],
+                capture_output=True, text=True, timeout=5
+            )
+            for line in result.stdout.splitlines():
+                if "Default Gateway" in line:
+                    parts = line.split(":")
+                    if len(parts) == 2:
+                        gw = parts[1].strip()
+                        if gw and gw not in ("", "None", ":"):
+                            try:
+                                ipaddress.ip_address(gw)
+                                logger.debug(f"Detected gateway (ipconfig): {gw}")
+                                return gw
+                            except ValueError:
+                                pass
+        else:
+            result = subprocess.run(
+                ["ip", "route", "show", "default"],
+                capture_output=True, text=True, timeout=5
+            )
+            for line in result.stdout.splitlines():
+                parts = line.split()
+                if "via" in parts:
+                    idx = parts.index("via")
+                    if idx + 1 < len(parts):
+                        gw = parts[idx + 1]
+                        logger.debug(f"Detected gateway (ip route): {gw}")
+                        return gw
+    except Exception as e:
+        logger.debug(f"Gateway detection failed: {e}")
+    return None
+
+
+def _detect_dns_servers() -> List[str]:
+    """Detect DNS server addresses from OS configuration. Returns a list (may be empty)."""
+    dns_list: List[str] = []
+    try:
+        os_name = platform.system()
+        if os_name == "Windows":
+            result = subprocess.run(
+                ["ipconfig", "/all"],
+                capture_output=True, text=True, timeout=5
+            )
+            for line in result.stdout.splitlines():
+                if "DNS Servers" in line or ("DNS" in line and "Server" in line):
+                    parts = line.split(":")
+                    if len(parts) >= 2:
+                        addr = parts[-1].strip()
+                        try:
+                            ipaddress.ip_address(addr)
+                            if addr not in dns_list:
+                                dns_list.append(addr)
+                        except ValueError:
+                            pass
+        else:
+            with open("/etc/resolv.conf", "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("nameserver"):
+                        parts = line.split()
+                        if len(parts) == 2:
+                            addr = parts[1]
+                            try:
+                                ipaddress.ip_address(addr)
+                                if addr not in dns_list:
+                                    dns_list.append(addr)
+                            except ValueError:
+                                pass
+    except Exception as e:
+        logger.debug(f"DNS server detection failed: {e}")
+    logger.debug(f"Detected DNS servers: {dns_list}")
+    return dns_list[:2]
+
+
+def _detect_interface_info(target_ip: str) -> tuple:
+    """
+    Returns (interface_name, interface_type, mac_address) for the adapter
+    owning target_ip. All values may be None on failure.
+    """
+    iface_name: Optional[str] = None
+    iface_type: Optional[str] = None
+    mac_addr: Optional[str] = None
+    try:
+        os_name = platform.system()
+        if os_name == "Windows":
+            result = subprocess.run(
+                ["ipconfig", "/all"],
+                capture_output=True, text=True, timeout=5
+            )
+            current_adapter: Optional[str] = None
+            current_mac: Optional[str] = None
+            found_ip = False
+            for line in result.stdout.splitlines():
+                if line and not line.startswith(" "):
+                    if found_ip and current_adapter:
+                        break
+                    current_adapter = line.strip().rstrip(":")
+                    current_mac = None
+                    found_ip = False
+                elif "Physical Address" in line:
+                    parts = line.split(":")
+                    if len(parts) >= 2:
+                        raw_mac = ":".join(parts[1:]).strip().replace("-", ":")
+                        current_mac = raw_mac if raw_mac else None
+                elif target_ip in line:
+                    found_ip = True
+                    if current_adapter:
+                        iface_name = current_adapter
+                        mac_addr = current_mac
+            if iface_name:
+                name_lower = iface_name.lower()
+                if any(k in name_lower for k in ("wi-fi", "wireless", "wlan", "wifi", "802.11")):
+                    iface_type = "Wireless"
+                elif any(k in name_lower for k in ("ethernet", "local area", "gigabit")):
+                    iface_type = "Ethernet"
+                else:
+                    iface_type = "Unknown"
+        else:
+            result = subprocess.run(
+                ["ip", "addr", "show"],
+                capture_output=True, text=True, timeout=5
+            )
+            current_iface: Optional[str] = None
+            current_mac_l: Optional[str] = None
+            for line in result.stdout.splitlines():
+                line = line.strip()
+                if line and line[0].isdigit():
+                    parts = line.split(":")
+                    if len(parts) >= 2:
+                        current_iface = parts[1].strip()
+                        current_mac_l = None
+                elif "link/ether" in line:
+                    parts = line.split()
+                    if len(parts) >= 2:
+                        current_mac_l = parts[1]
+                elif f"inet {target_ip}" in line and current_iface:
+                    iface_name = current_iface
+                    mac_addr = current_mac_l
+                    name_lower = iface_name.lower()
+                    if any(k in name_lower for k in ("wlan", "wlp", "wifi", "wireless")):
+                        iface_type = "Wireless"
+                    else:
+                        iface_type = "Ethernet"
+                    break
+    except Exception as e:
+        logger.debug(f"Interface info detection failed: {e}")
+    logger.debug(f"Interface info — name={iface_name} type={iface_type} mac={mac_addr}")
+    return iface_name, iface_type, mac_addr
+
+
+def _detect_hostname() -> Optional[str]:
+    """Returns the system hostname. Returns None on failure."""
+    try:
+        return socket.gethostname()
+    except Exception as e:
+        logger.debug(f"Hostname detection failed: {e}")
+        return None
+
+
+def _check_internet() -> bool:
+    """
+    Lightweight internet connectivity check using a non-blocking TCP handshake
+    to 8.8.8.8:53 (Google Public DNS). Returns True if reachable within 2s.
+    """
+    try:
+        sock = socket.create_connection(("8.8.8.8", 53), timeout=2)
+        sock.close()
+        logger.debug("Internet connectivity check: reachable")
+        return True
+    except Exception as e:
+        logger.debug(f"Internet connectivity check failed: {e}")
+        return False
 
 
 def validate_cidr(cidr_str: str) -> tuple[bool, str, int]:
