@@ -136,6 +136,19 @@ backend\.venv\Scripts\python.exe tests/test_db_split.py
 
 ---
 
+## 🔗 Live Demo
+
+Once deployed, the live application and diagnostic endpoints can be accessed at:
+
+- **Frontend Webapp:** [https://infraguard.vercel.app](https://infraguard.vercel.app)
+- **Backend Base API:** [https://infraguard-api.onrender.com](https://infraguard-api.onrender.com)
+- **API Telemetry & Diagnostics:**
+  - Health Audit: [https://infraguard-api.onrender.com/api/health](https://infraguard-api.onrender.com/api/health)
+  - Release Version: [https://infraguard-api.onrender.com/api/version](https://infraguard-api.onrender.com/api/version)
+  - System Diagnostics: [https://infraguard-api.onrender.com/api/system](https://infraguard-api.onrender.com/api/system)
+
+---
+
 ## 📜 License
 
 Distributed under the MIT License. See [LICENSE](file:///e:/Development/Projects/InfraGuard/LICENSE) for details.
