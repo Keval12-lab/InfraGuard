@@ -4,8 +4,12 @@ import logging
 
 logger = logging.getLogger("infraguard.database")
 
-DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "instance")
-DB_PATH = os.path.join(DB_DIR, "infraguard.db")
+DB_PATH = os.getenv("DATABASE_PATH") or os.getenv("DATABASE_URL")
+if DB_PATH:
+    DB_DIR = os.path.dirname(DB_PATH)
+else:
+    DB_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "instance")
+    DB_PATH = os.path.join(DB_DIR, "infraguard.db")
 
 
 def get_db_connection():
