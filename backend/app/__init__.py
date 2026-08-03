@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import time
@@ -96,12 +97,12 @@ def create_app() -> Flask:
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Content-Security-Policy"] = settings.security_csp
-        
+
         # Configure HSTS dynamically; avoid HSTS lockout on local dev environments
         is_local = request.host.startswith("localhost") or request.host.startswith("127.0.0.1")
         if settings.security_hsts_enabled and not is_local:
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-            
+
         return response
 
     @app.get("/api/health")
