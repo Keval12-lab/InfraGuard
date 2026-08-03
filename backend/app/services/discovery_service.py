@@ -537,6 +537,8 @@ def measure_network_quality(gateway: Optional[str]) -> Dict[str, Any]:
         "packet_loss_pct": packet_loss_pct,
         "jitter_ms": jitter_ms,
         "quality_rating": quality_rating,
+        "sample_count": PING_COUNT,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 

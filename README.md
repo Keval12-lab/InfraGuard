@@ -4,7 +4,7 @@
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB.svg)
 ![React](https://img.shields.io/badge/React-19-61DAFB.svg)
 ![Flask](https://img.shields.io/badge/Flask-3.x-000000.svg)
-![Release](https://img.shields.io/badge/Release-v1.0.0--RC1-green.svg)
+![Release](https://img.shields.io/badge/Release-v1.0.1-green.svg)
 
 > **Enterprise IT Infrastructure Visibility Platform** built with React, Flask, SQLite, and Network Discovery Engines.
 
@@ -21,20 +21,42 @@ InfraGuard is an IT Infrastructure Visibility Platform designed for defensive as
 - **Modular Database Facade:** Clean repository pattern separating domain modules (Assets, SNMP, Runbooks, Passports) behind `database/db.py`.
 - **Production Diagnostic Telemetry:** Standardized `/api/health`, `/api/version`, and `/api/system` telemetry endpoints with CORS protection.
 
-### ✨ Module Matrix
-
-| Module                 | Status | Core Capability                                 |
-| :--------------------- | :----: | :---------------------------------------------- |
-| **Dashboard**          |   ✅   | System summary metrics & quick actions          |
-| **Network Discovery**  |   ✅   | Subnet entity discovery via ICMP/ARP probes     |
-| **Asset Inventory**    |   ✅   | Hardware configuration & passport location tags |
-| **Topology Mapping**   |   ✅   | Interactive RAF-driven SVG graph rendering      |
-| **Engineer Workspace** |   ✅   | ICMP ping, TCP port probe & WOL diagnostics     |
-| **SNMP Inspector**     |   ✅   | Interface, neighbor & VLAN telemetry            |
-| **Runbooks**           |   ✅   | Guided diagnostic recovery sequences            |
-| **SIEM Timeline Log**  |   ✅   | System audit event stream                       |
+| Module                      | Status | Core Capability                                          |
+| :-------------------------- | :----: | :------------------------------------------------------- |
+| **Dashboard**               |   ✅   | System summary metrics & quick actions                   |
+| **Network Identity**        |   ✅   | Hostname, OS, user, boot time, public IP & ISP detection |
+| **Network Quality**         |   ✅   | Latency, jitter, DNS timing, packet loss & quality score |
+| **Network Discovery**       |   ✅   | Subnet entity discovery via ICMP/ARP probes              |
+| **Asset Inventory**         |   ✅   | Hardware configuration & passport location tags          |
+| **Topology Mapping**        |   ✅   | Interactive RAF-driven SVG graph rendering               |
+| **Engineer Workspace**      |   ✅   | ICMP ping, TCP port probe & WOL diagnostics              |
+| **SNMP Inspector**          |   ✅   | Interface, neighbor & VLAN telemetry                     |
+| **Runbooks**                |   ✅   | Guided diagnostic recovery sequences                     |
+| **SIEM Timeline Log**       |   ✅   | System audit event stream                                |
 
 ---
+
+## 🏢 Enterprise Features
+
+| Capability | Status |
+| :--- | :---: |
+| Automatic Network Identity Detection | ✅ |
+| Automatic LAN Subnet Detection | ✅ |
+| Public IP Detection | ✅ |
+| ISP Detection | ✅ |
+| OS & Boot Time Detection | ✅ |
+| Network Quality Analysis (Latency / Jitter / DNS) | ✅ |
+| Packet Loss Detection | ✅ |
+| Device Discovery via ICMP/ARP | ✅ |
+| Infrastructure Asset Inventory | ✅ |
+| Infrastructure Passports (Rack / Room / Contract) | ✅ |
+| Interactive Network Topology Map | ✅ |
+| SNMP Device Inspection | ✅ |
+| Troubleshooter Runbooks | ✅ |
+| PDF Report Generation | ✅ |
+| SIEM-Ready Audit Timeline | ✅ |
+| REST API Backend | ✅ |
+| Production Deployment (Render + Vercel) | ✅ |
 
 ## 🏛️ System Architecture
 
