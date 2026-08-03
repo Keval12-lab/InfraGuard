@@ -1,7 +1,12 @@
 import logging
 from flask import Blueprint, jsonify, request
 
-from ..services.discovery_service import detect_local_subnet, execute_subnet_discovery, validate_cidr
+from ..services.discovery_service import (
+    detect_local_subnet,
+    execute_subnet_discovery,
+    validate_cidr,
+    measure_network_quality,
+)
 from ..database.db import save_discovery_results, get_discovery_history
 
 logger = logging.getLogger("infraguard.routes.discovery")
@@ -21,6 +26,33 @@ def get_detected_subnet():
         "status": "success",
         "data": data
     })
+
+
+@discovery_bp.route("/network-quality", methods=["GET", "OPTIONS"])
+def get_network_quality():
+    """
+    Measures real-time network quality: gateway ping, internet latency,
+    DNS response time, packet loss, jitter, and a quality rating.
+    """
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+
+    try:
+        # Detect gateway from subnet info for gateway ping
+        subnet_info = detect_local_subnet()
+        gateway = subnet_info.get("default_gateway")
+        quality = measure_network_quality(gateway)
+        logger.info(f"Network quality request completed: rating={quality.get('quality_rating')}")
+        return jsonify({
+            "status": "success",
+            "data": quality
+        })
+    except Exception as e:
+        logger.error(f"Network quality measurement failed: {e}", exc_info=True)
+        return jsonify({
+            "status": "error",
+            "message": "Network quality measurement failed."
+        }), 500
 
 
 @discovery_bp.route("/scan", methods=["POST", "OPTIONS"])

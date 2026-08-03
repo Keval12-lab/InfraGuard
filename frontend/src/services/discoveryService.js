@@ -13,6 +13,10 @@ export const discoveryService = {
     const res = await apiClient.get("/discovery/history");
     return res.data;
   },
+  getNetworkQuality: async () => {
+    const res = await apiClient.get("/discovery/network-quality");
+    return res.data;
+  },
 };
 
 export default discoveryService;

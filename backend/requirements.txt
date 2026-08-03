@@ -3,3 +3,4 @@ flask-cors==4.0.1
 python-dotenv==1.0.1
 reportlab==5.0.0
 gunicorn==23.0.0
+psutil==6.1.1

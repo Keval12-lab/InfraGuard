@@ -4,8 +4,19 @@ import platform
 import subprocess
 import concurrent.futures
 import logging
+import os
+import statistics
+import time
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
+
+try:
+    import psutil
+    _PSUTIL_AVAILABLE = True
+except ImportError:
+    _PSUTIL_AVAILABLE = False
 
 from ..config import (
     DISCOVERY_TIMEOUT,
@@ -101,10 +112,20 @@ def detect_local_subnet() -> Dict[str, Any]:
             "interface_type": None,
             "mac_address": None,
             "hostname": _detect_hostname(),
+            "current_user": _detect_current_user(),
             "internet_connected": _check_internet(),
             "is_loopback": False,
             "message": "Active LAN interface detected successfully."
         }
+
+        os_info = _detect_os_info()
+        enriched["os_name"] = os_info.get("os_name")
+        enriched["windows_version"] = os_info.get("windows_version")
+        enriched["boot_time"] = _detect_boot_time()
+
+        public_ip = _detect_public_ip()
+        enriched["public_ip"] = public_ip
+        enriched["isp"] = _detect_isp(public_ip)
 
         dns_servers = _detect_dns_servers()
         enriched["primary_dns"] = dns_servers[0] if len(dns_servers) > 0 else None
@@ -118,7 +139,8 @@ def detect_local_subnet() -> Dict[str, Any]:
         logger.info(
             f"Subnet enrichment complete — gateway={enriched['default_gateway']} "
             f"dns={enriched['primary_dns']} iface={enriched['interface_name']} "
-            f"type={enriched['interface_type']} internet={enriched['internet_connected']}"
+            f"type={enriched['interface_type']} internet={enriched['internet_connected']} "
+            f"public_ip={enriched['public_ip']} isp={enriched['isp']}"
         )
         return enriched
 
@@ -323,6 +345,199 @@ def _check_internet() -> bool:
     except Exception as e:
         logger.debug(f"Internet connectivity check failed: {e}")
         return False
+
+
+# ---------------------------------------------------------------------------
+# Phase 1 — System Identity helpers
+# ---------------------------------------------------------------------------
+
+def _detect_current_user() -> Optional[str]:
+    """Returns the logged-in OS username. Returns None on failure."""
+    try:
+        return os.getlogin()
+    except Exception:
+        try:
+            return os.environ.get("USERNAME") or os.environ.get("USER")
+        except Exception as e:
+            logger.debug(f"Current user detection failed: {e}")
+            return None
+
+
+def _detect_os_info() -> dict:
+    """
+    Returns os_name and windows_version (or kernel_version on Linux).
+    Always returns a dict with null-safe values.
+    """
+    try:
+        system = platform.system()
+        release = platform.release()
+        version = platform.version()
+        if system == "Windows":
+            # e.g. "Windows 11 Pro" from platform.uname
+            uname = platform.uname()
+            os_name = f"Windows {release}"
+            return {"os_name": os_name, "windows_version": version}
+        elif system == "Darwin":
+            return {"os_name": f"macOS {platform.mac_ver()[0]}", "windows_version": None}
+        else:
+            return {"os_name": f"Linux {release}", "windows_version": None}
+    except Exception as e:
+        logger.debug(f"OS info detection failed: {e}")
+        return {"os_name": None, "windows_version": None}
+
+
+def _detect_boot_time() -> Optional[str]:
+    """
+    Returns system boot time as an ISO 8601 UTC string.
+    Uses psutil if available (cross-platform); falls back to platform-specific commands.
+    """
+    try:
+        if _PSUTIL_AVAILABLE:
+            boot_ts = psutil.boot_time()
+            return datetime.fromtimestamp(boot_ts, tz=timezone.utc).isoformat()
+        # Linux fallback: /proc/uptime
+        if platform.system() != "Windows":
+            with open("/proc/uptime", "r") as f:
+                uptime_seconds = float(f.read().split()[0])
+            boot_ts = time.time() - uptime_seconds
+            return datetime.fromtimestamp(boot_ts, tz=timezone.utc).isoformat()
+    except Exception as e:
+        logger.debug(f"Boot time detection failed: {e}")
+    return None
+
+
+def _detect_public_ip() -> Optional[str]:
+    """
+    Fetches the public-facing IPv4 address from ipify.org.
+    Returns None on timeout or any network failure.
+    """
+    try:
+        url = "https://api.ipify.org?format=json"
+        req = urllib.request.Request(url, headers={"User-Agent": "InfraGuard/1.0"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            import json
+            data = json.loads(resp.read().decode())
+            ip = data.get("ip")
+            if ip:
+                logger.debug(f"Public IP detected: {ip}")
+            return ip
+    except Exception as e:
+        logger.debug(f"Public IP detection failed: {e}")
+        return None
+
+
+def _detect_isp(public_ip: Optional[str]) -> Optional[str]:
+    """
+    Fetches ISP/org name for the given public IP using ipapi.co.
+    Only called when public_ip is not None.
+    Returns None on timeout or any network failure.
+    """
+    if not public_ip:
+        return None
+    try:
+        url = f"https://ipapi.co/{public_ip}/org/"
+        req = urllib.request.Request(url, headers={"User-Agent": "InfraGuard/1.0"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            isp = resp.read().decode().strip()
+            # Strip ASN prefix e.g. "AS12345 Reliance Jio" -> "Reliance Jio"
+            if isp and " " in isp and isp.split()[0].startswith("AS"):
+                isp = " ".join(isp.split()[1:])
+            logger.debug(f"ISP detected: {isp}")
+            return isp if isp else None
+    except Exception as e:
+        logger.debug(f"ISP detection failed: {e}")
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 — Network Quality measurement
+# ---------------------------------------------------------------------------
+
+def measure_network_quality(gateway: Optional[str]) -> Dict[str, Any]:
+    """
+    Measures real-time network quality metrics:
+    - gateway_ping_ms
+    - internet_ping_ms
+    - dns_response_ms
+    - packet_loss_pct
+    - jitter_ms
+    - quality_rating: Excellent / Good / Fair / Poor
+
+    All values return None on failure. Never raises exceptions.
+    """
+    PING_COUNT = 5
+    INTERNET_TARGET = "8.8.8.8"
+    DNS_TARGET = "google.com"
+
+    def _ping_rtt(host: str) -> Optional[float]:
+        """Single ICMP/TCP ping returning RTT in ms, or None on failure."""
+        try:
+            start = time.perf_counter()
+            sock = socket.create_connection((host, 53), timeout=2)
+            sock.close()
+            return round((time.perf_counter() - start) * 1000, 2)
+        except Exception:
+            return None
+
+    def _multi_ping(host: str, count: int) -> List[Optional[float]]:
+        return [_ping_rtt(host) for _ in range(count)]
+
+    # Gateway ping (single measurement)
+    gateway_ping_ms: Optional[float] = None
+    if gateway:
+        try:
+            gateway_ping_ms = _ping_rtt(gateway)
+        except Exception:
+            pass
+
+    # Internet multi-ping for packet loss and jitter
+    internet_samples = _multi_ping(INTERNET_TARGET, PING_COUNT)
+    successful = [r for r in internet_samples if r is not None]
+    failed = PING_COUNT - len(successful)
+
+    internet_ping_ms: Optional[float] = round(statistics.mean(successful), 2) if successful else None
+    packet_loss_pct: float = round((failed / PING_COUNT) * 100, 1)
+    jitter_ms: Optional[float] = (
+        round(statistics.stdev(successful), 2) if len(successful) >= 2 else 0.0
+    )
+
+    # DNS response time
+    dns_response_ms: Optional[float] = None
+    try:
+        start = time.perf_counter()
+        socket.getaddrinfo(DNS_TARGET, None, socket.AF_INET)
+        dns_response_ms = round((time.perf_counter() - start) * 1000, 2)
+    except Exception as e:
+        logger.debug(f"DNS response time measurement failed: {e}")
+
+    # Quality rating
+    def _rate(ping: Optional[float], loss: float) -> str:
+        if ping is None:
+            return "Poor"
+        if loss == 0 and ping < 10:
+            return "Excellent"
+        if loss < 2 and ping < 50:
+            return "Good"
+        if loss < 5 and ping < 150:
+            return "Fair"
+        return "Poor"
+
+    quality_rating = _rate(internet_ping_ms, packet_loss_pct)
+
+    logger.info(
+        f"Network quality — gateway={gateway_ping_ms}ms internet={internet_ping_ms}ms "
+        f"dns={dns_response_ms}ms loss={packet_loss_pct}% jitter={jitter_ms}ms "
+        f"rating={quality_rating}"
+    )
+
+    return {
+        "gateway_ping_ms": gateway_ping_ms,
+        "internet_ping_ms": internet_ping_ms,
+        "dns_response_ms": dns_response_ms,
+        "packet_loss_pct": packet_loss_pct,
+        "jitter_ms": jitter_ms,
+        "quality_rating": quality_rating,
+    }
 
 
 def validate_cidr(cidr_str: str) -> tuple[bool, str, int]:
