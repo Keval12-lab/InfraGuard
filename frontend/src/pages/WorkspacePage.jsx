@@ -73,11 +73,12 @@ export default function WorkspacePage() {
 
   const handlePingSubmit = async (e) => {
     e.preventDefault();
+    const normalizedCount = pingCount === "" ? 4 : Number(pingCount) || 4;
     setConsoleOutput(
-      `> Executing ICMP Ping against ${targetIp} (count: ${pingCount})...`
+      `> Executing ICMP Ping against ${targetIp} (count: ${normalizedCount})...`
     );
     try {
-      const res = await runPing({ ip: targetIp, count: pingCount });
+      const res = await runPing({ ip: targetIp, count: normalizedCount });
       setLastExecutionStatus(res.success);
       setConsoleOutput(res.output);
     } catch (err) {

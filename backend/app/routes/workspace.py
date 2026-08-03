@@ -25,7 +25,12 @@ def api_ping_tool():
 
     data = request.get_json() or {}
     target_ip = data.get("ip") or data.get("target")
-    count = int(data.get("count", 4))
+    raw_count = data.get("count")
+    try:
+        count = int(raw_count) if raw_count not in (None, "") else 4
+    except (ValueError, TypeError):
+        count = 4
+    count = max(1, min(count, 10))
     asset_id = data.get("asset_id")
 
     enforce_target_validation(target_ip, "ping_tool")
