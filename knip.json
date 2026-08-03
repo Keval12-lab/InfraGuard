@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["frontend/src/main.jsx"],
+  "project": ["frontend/src/**/*.{js,jsx}"],
+  "ignore": ["frontend/src/pages/NetworkPage.jsx"],
+  "ignoreDependencies": [
+    "concurrently",
+    "@eslint/js",
+    "eslint-plugin-react",
+    "eslint-plugin-react-hooks",
+    "eslint-plugin-import",
+    "typescript"
+  ]
+}

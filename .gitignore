@@ -20,7 +20,9 @@ reports/generated/
 sample_data/local/
 
 # IDE and OS
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 .DS_Store
 Thumbs.db

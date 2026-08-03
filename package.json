@@ -6,13 +6,31 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
     "dev:frontend": "npm run dev --workspace frontend",
-    "dev:backend": "npm run dev --workspace backend"
+    "dev:backend": "npm run dev --workspace backend",
+    "build:frontend": "npm run build --workspace frontend",
+    "lint": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "unused": "knip",
+    "audit": "npm audit",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run build:frontend",
+    "ci": "npm run verify",
+    "clean": "npx rimraf node_modules frontend/node_modules backend/node_modules frontend/dist"
   },
   "workspaces": [
     "frontend",
     "backend"
   ],
   "devDependencies": {
-    "concurrently": "^9.2.0"
+    "@eslint/js": "^9.19.0",
+    "concurrently": "^9.2.0",
+    "eslint": "^9.19.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "knip": "^5.43.6",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3"
   }
 }
