@@ -16,8 +16,11 @@ def test_endpoints():
     response = client.get("/api/health")
     assert response.status_code == 200
     data = json.loads(response.data)
-    assert data["status"] == "ok"
-    assert "message" in data
+    assert data["status"] == "healthy"
+    assert data["database"] == "connected"
+    assert data["version"] == "1.0.0"
+    assert "uptime" in data
+    assert "environment" in data
 
     # 2. Test /api/version
     response = client.get("/api/version")

@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import time
+import os
 
 START_TIME = time.time()
 
@@ -105,9 +106,23 @@ def create_app() -> Flask:
 
     @app.get("/api/health")
     def health_check():
+        try:
+            from .database.db import get_db_connection
+            conn = get_db_connection()
+            conn.execute("SELECT 1")
+            conn.close()
+            db_status = "connected"
+        except Exception as e:
+            db_status = f"error: {str(e)}"
+
+        uptime_seconds = time.time() - START_TIME
+
         return jsonify({
-            "status": "ok",
-            "message": "InfraGuard Backend Running",
+            "status": "healthy" if db_status == "connected" else "degraded",
+            "database": db_status,
+            "version": "1.0.0",
+            "uptime": round(uptime_seconds, 1),
+            "environment": os.getenv("FLASK_ENV", "development")
         })
 
     @app.get("/api/version")
