@@ -33,14 +33,17 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-
-// Icons
 import Typography from "@mui/material/Typography";
 import { useNavigate } from "react-router-dom";
 
 // Shared Components & Custom Hooks
-import EmptyState from "../components/common/EmptyState";
-import StatusChip from "../components/common/StatusChip";
+import IGPage from "../components/ui/IGPage";
+import IGPageHeader from "../components/ui/IGPageHeader";
+import IGSection from "../components/ui/IGSection";
+import IGCard from "../components/ui/IGCard";
+import IGMetricCard from "../components/ui/IGMetricCard";
+import IGStatusChip from "../components/ui/IGStatusChip";
+import IGEmptyState from "../components/ui/IGEmptyState";
 import useDashboard from "../hooks/useDashboard";
 import useIntelligence from "../hooks/useIntelligence";
 import { useMonitoringSummary, useMonitoringStatus } from "../hooks/useMonitoring";
@@ -153,327 +156,67 @@ export default function DashboardPage() {
   ];
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
-      }}
-    >
-      {/* ──── HERO: Infrastructure Health Hero Banner ──── */}
-      <Paper
-        variant="outlined"
-        sx={{
-          p: 3.5,
-          backgroundColor: "#FFFFFF",
-          borderRadius: 3,
-          borderColor: "divider",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-          <HealthAndSafetyIcon color="primary" sx={{ fontSize: 28 }} />
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            InfraGuard Infrastructure Health
-          </Typography>
-        </Box>
-
-        <Grid container spacing={3} alignItems="center">
-          {/* Health Score & Status Label */}
-          <Grid
-            item
-            xs={12}
-            sm={4}
-            sx={{ textAlign: "center", borderRight: { sm: "1px solid #E2E8F0" } }}
-          >
-            <Typography
-              variant="h2"
-              sx={{
-                fontWeight: 800,
-                color:
-                  healthScore >= 75
-                    ? "success.main"
-                    : healthScore >= 50
-                      ? "warning.main"
-                      : "error.main",
-              }}
-            >
-              {isIntelLoading ? (
-                <Skeleton width={90} sx={{ mx: "auto" }} />
-              ) : (
-                `${healthScore} / 100`
-              )}
-            </Typography>
-            <Typography
-              variant="subtitle1"
-              sx={{
-                fontWeight: 700,
-                color:
-                  healthScore >= 75
-                    ? "success.main"
-                    : healthScore >= 50
-                      ? "warning.main"
-                      : "error.main",
-              }}
-            >
-              {healthLabel}
-            </Typography>
-          </Grid>
-
-          {/* Quick Device Counts & Status Line */}
-          <Grid item xs={12} sm={8}>
-            <Stack direction="row" spacing={3} flexWrap="wrap" sx={{ mb: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <CheckCircleOutlineIcon color="success" fontSize="small" />
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  Healthy Devices
-                </Typography>
-                <Typography
-                  variant="body2"
-                  className="font-mono"
-                  sx={{ fontWeight: 700 }}
-                >
-                  {healthyCount}
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <WarningAmberIcon color="warning" fontSize="small" />
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  Warning
-                </Typography>
-                <Typography
-                  variant="body2"
-                  className="font-mono"
-                  sx={{ fontWeight: 700 }}
-                >
-                  {warningCount}
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <HighlightOffIcon color="error" fontSize="small" />
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  Offline
-                </Typography>
-                <Typography
-                  variant="body2"
-                  className="font-mono"
-                  sx={{ fontWeight: 700 }}
-                >
-                  {offlineCount}
-                </Typography>
-              </Box>
-            </Stack>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-              <Box
-                className="pulse-live"
-                sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "success.main" }}
-              />
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ fontWeight: 600 }}
-              >
-                Monitoring Running • Last Scan: {lastDiscoveryTime}
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 2.5 }} />
-
-        {/* Top Recommendation & Actions */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Box sx={{ maxWidth: "65%" }}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-              }}
-            >
-              Top Recommendation
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, color: "text.primary", mt: 0.3 }}
-            >
-              {intelData?.recommendations?.[0]
-                ? `${intelData.recommendations[0].title} — ${intelData.recommendations[0].detail}`
-                : "All systems operational. No critical remediation required."}
-            </Typography>
-          </Box>
-
-          <Stack direction="row" spacing={1.5}>
+    <IGPage>
+      <IGPageHeader
+        title="InfraGuard Overview"
+        subtitle={`Monitoring Running • Last Scan: ${lastDiscoveryTime}`}
+        icon={<HealthAndSafetyIcon />}
+        action={
+          <Stack direction="row" spacing={2}>
             <Button
               variant="contained"
-              size="small"
               startIcon={<RadarIcon />}
               onClick={() => navigate("/discovery")}
-              sx={{ borderRadius: 2, fontWeight: 600 }}
             >
               Start Discovery
             </Button>
             <Button
               variant="outlined"
-              size="small"
-              startIcon={<InventoryIcon />}
-              onClick={() => navigate("/assets")}
-              sx={{ borderRadius: 2, fontWeight: 600 }}
+              startIcon={<RefreshIcon />}
+              onClick={handleRefreshAll}
+              disabled={isLoading}
             >
-              View Assets
+              Refresh
             </Button>
           </Stack>
-        </Box>
-      </Paper>
-
-      {/* Error Alert */}
-      {isError && (
-        <Alert severity="error" sx={{ borderRadius: 2 }}>
-          {errorMessage} Retrying automatically during next background refresh cycle.
-        </Alert>
-      )}
-
+        }
+      />
       {/* ──── SECTION HEADER: Summary Metrics ──── */}
-      <Box
-        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-      >
-        <Typography variant="h6" component="h2" sx={{ fontWeight: 700 }}>
-          Telemetry Metrics
-        </Typography>
-        <Button
-          size="small"
-          startIcon={<RefreshIcon />}
-          onClick={handleRefreshAll}
-          disabled={isLoading}
-          sx={{ fontWeight: 600 }}
-        >
-          {isLoading ? "Refreshing..." : "Refresh Telemetry"}
-        </Button>
-      </Box>
-
-      {/* Metric Cards Grid */}
-      <Grid container spacing={2.5}>
-        {isLoading
-          ? Array.from({ length: 6 }).map((_, idx) => (
-              <Grid item xs={12} sm={6} md={4} key={idx}>
-                <Card variant="outlined" sx={{ borderRadius: 3, p: 2.5 }}>
-                  <Skeleton variant="text" width="60%" height={20} />
-                  <Skeleton
-                    variant="rectangular"
-                    width="80%"
-                    height={36}
-                    sx={{ my: 1, borderRadius: 1 }}
-                  />
-                  <Skeleton variant="text" width="40%" height={16} />
-                </Card>
-              </Grid>
-            ))
-          : summaryCards.map((card, index) => {
-              const IconComponent = card.icon;
-              return (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Card
-                    variant="outlined"
-                    sx={{
-                      height: "100%",
-                      borderRadius: 3,
-                      borderColor: "divider",
-                      transition: "all 0.2s ease-in-out",
-                      "&:hover": {
-                        borderColor: "primary.main",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                      },
-                    }}
-                  >
-                    <CardContent sx={{ p: 2.5, "&:last-child": { pb: 2.5 } }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                          mb: 1,
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ fontWeight: 600, textTransform: "uppercase" }}
-                        >
-                          {card.title}
-                        </Typography>
-                        <Box
-                          sx={{
-                            p: 0.8,
-                            borderRadius: 1.5,
-                            bgcolor: "rgba(2, 132, 199, 0.08)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <IconComponent sx={{ color: card.color, fontSize: 20 }} />
-                        </Box>
-                      </Box>
-                      <Typography
-                        variant="h4"
-                        component="div"
-                        className={card.isMono ? "font-mono" : ""}
-                        sx={{ fontWeight: 700, color: "text.primary", mb: 0.5 }}
-                      >
-                        {card.value}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ display: "block" }}
-                      >
-                        {card.caption}
-                      </Typography>
-                    </CardContent>
-                  </Card>
+      <IGSection title="Telemetry Metrics">
+        <Grid container spacing={3}>
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, idx) => (
+                <Grid item xs={12} sm={6} md={4} key={idx}>
+                  <IGCard variant="metric" noPadding>
+                    <Skeleton variant="rectangular" height={100} />
+                  </IGCard>
                 </Grid>
-              );
-            })}
-      </Grid>
+              ))
+            : summaryCards.map((card, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <IGMetricCard
+                    title={card.title}
+                    value={card.value}
+                    caption={card.caption}
+                    icon={card.icon}
+                    color={card.color}
+                    isMono={card.isMono}
+                  />
+                </Grid>
+              ))}
+        </Grid>
+      </IGSection>
 
       {/* ──── SECTION: Intelligence & Monitored Assets Grid ──── */}
-      <Grid container spacing={2.5}>
-        {/* Left: Monitored Asset Health & Performance Table */}
-        <Grid item xs={12} md={8}>
-          <Card
-            variant="outlined"
-            sx={{ height: "100%", borderRadius: 3, borderColor: "divider" }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 2,
-                }}
-              >
-                <Typography variant="h6" component="h3" sx={{ fontWeight: 700 }}>
-                  Monitored Infrastructure Assets
-                </Typography>
-                <Chip
-                  label={`${monitoredAssets.length} active`}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontWeight: 600 }}
-                />
-              </Box>
+      <IGSection title="Infrastructure Intelligence & Assets">
+        <Grid container spacing={3}>
+          {/* Left: Monitored Asset Health & Performance Table */}
+          <Grid item xs={12} md={8} xl={9}>
+            <IGCard
+              title="Monitored Assets"
+              subtitle={`${monitoredAssets.length} active devices`}
+              noPadding
+            >
 
               {isLoading && (
                 <Stack spacing={1}>
@@ -484,8 +227,8 @@ export default function DashboardPage() {
               )}
 
               {!isLoading && monitoredAssets.length === 0 && (
-                <EmptyState
-                  icon={<RadarIcon sx={{ fontSize: 48, color: "primary.main" }} />}
+                <IGEmptyState
+                  icon={<RadarIcon />}
                   title="No Monitored Assets Found"
                   description="Run a network discovery scan to automatically populate your asset repository."
                   action={
@@ -493,7 +236,6 @@ export default function DashboardPage() {
                       variant="contained"
                       startIcon={<PlayArrowIcon />}
                       onClick={() => navigate("/discovery")}
-                      sx={{ borderRadius: 2, px: 3 }}
                     >
                       Run Network Discovery
                     </Button>
@@ -529,7 +271,7 @@ export default function DashboardPage() {
                           onClick={() => navigate("/assets")}
                         >
                           <TableCell>
-                            <StatusChip status={asset.status} />
+                            <IGStatusChip status={asset.status} />
                           </TableCell>
                           <TableCell
                             className="font-mono"
@@ -564,20 +306,12 @@ export default function DashboardPage() {
                   </Table>
                 </TableContainer>
               )}
-            </CardContent>
-          </Card>
-        </Grid>
+            </IGCard>
+          </Grid>
 
-        {/* Right: Quick Actions & System Info */}
-        <Grid item xs={12} md={4}>
-          <Card
-            variant="outlined"
-            sx={{ height: "100%", borderRadius: 3, borderColor: "divider" }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" component="h3" sx={{ fontWeight: 700, mb: 2 }}>
-                Quick Operations
-              </Typography>
+          {/* Right: Quick Actions & System Info */}
+          <Grid item xs={12} md={4} xl={3}>
+            <IGCard title="Quick Operations">
               <Stack spacing={1.5}>
                 <Button
                   variant="contained"
@@ -607,94 +341,60 @@ export default function DashboardPage() {
                   Generate Reports
                 </Button>
               </Stack>
-            </CardContent>
-          </Card>
+            </IGCard>
+          </Grid>
         </Grid>
-      </Grid>
-
-      {/* ──── SECTION: Infrastructure Intelligence ──── */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mt: 1,
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <TipsAndUpdatesIcon fontSize="small" color="primary" />
-          <Typography variant="h6" component="h2" sx={{ fontWeight: 700 }}>
-            Infrastructure Intelligence & Rule Findings
-          </Typography>
-        </Box>
-        {!isIntelLoading && intelData && (
-          <Chip
-            label={`Rules Checked: 7 Active`}
-            variant="outlined"
-            size="small"
-            sx={{ fontWeight: 600 }}
-          />
-        )}
-      </Box>
+      </IGSection>
 
       {isIntelLoading && (
-        <Grid container spacing={2.5}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Grid item xs={12} md={4} key={i}>
-              <Card variant="outlined" sx={{ borderRadius: 3, p: 2.5 }}>
-                <Skeleton variant="text" width="50%" height={20} />
-                <Skeleton
-                  variant="rectangular"
-                  height={60}
-                  sx={{ my: 1, borderRadius: 1 }}
-                />
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+        <IGSection>
+          <Grid container spacing={3}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Grid item xs={12} md={4} key={i}>
+                <IGCard>
+                  <Skeleton variant="text" width="50%" height={20} />
+                  <Skeleton variant="rectangular" height={60} sx={{ my: 1 }} />
+                </IGCard>
+              </Grid>
+            ))}
+          </Grid>
+        </IGSection>
       )}
 
       {!isIntelLoading && (!intelData || intelData.total_assets === 0) && (
-        <Card variant="outlined" sx={{ borderRadius: 3, borderColor: "divider" }}>
-          <CardContent sx={{ p: 3, textAlign: "center" }}>
-            <TipsAndUpdatesIcon sx={{ fontSize: 48, color: "primary.main", mb: 1 }} />
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-              No Intelligence Data
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Run your first network discovery to generate rule-based findings and
-              recommendations.
-            </Typography>
-          </CardContent>
-        </Card>
+        <IGSection>
+          <IGCard>
+            <Box sx={{ p: 3, textAlign: "center" }}>
+              <TipsAndUpdatesIcon sx={{ fontSize: 48, color: "primary.main", mb: 1 }} />
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                No Intelligence Data
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Run your first network discovery to generate rule-based findings and
+                recommendations.
+              </Typography>
+            </Box>
+          </IGCard>
+        </IGSection>
       )}
 
       {!isIntelLoading && intelData && intelData.total_assets > 0 && (
-        <Grid container spacing={2.5}>
-          {/* Critical Alerts */}
-          <Grid item xs={12} md={4}>
-            <Card
-              variant="outlined"
-              sx={{
-                borderRadius: 3,
-                borderColor:
-                  intelData.critical_alerts.length > 0 ? "error.main" : "divider",
-                height: "100%",
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <GppBadIcon sx={{ color: "error.main", fontSize: 20 }} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                    Critical Alerts
-                  </Typography>
+        <IGSection title="Active Diagnostics">
+          <Grid container spacing={3}>
+            {/* Critical Alerts */}
+            <Grid item xs={12} md={4}>
+              <IGCard
+                variant={intelData.critical_alerts.length > 0 ? "danger" : "default"}
+                title="Critical Alerts"
+                action={
                   <Chip
                     label={intelData.critical_alerts.length}
                     size="small"
                     color={intelData.critical_alerts.length > 0 ? "error" : "default"}
-                    sx={{ fontWeight: 700, height: 20, fontSize: "0.7rem" }}
+                    sx={{ fontWeight: 700 }}
                   />
-                </Box>
+                }
+              >
                 {intelData.critical_alerts.length === 0 ? (
                   <Typography variant="body2" color="text.secondary">
                     No critical issues detected. All critical infrastructure devices are
@@ -723,33 +423,23 @@ export default function DashboardPage() {
                     ))}
                   </Stack>
                 )}
-              </CardContent>
-            </Card>
-          </Grid>
+              </IGCard>
+            </Grid>
 
-          {/* Warnings */}
-          <Grid item xs={12} md={4}>
-            <Card
-              variant="outlined"
-              sx={{
-                borderRadius: 3,
-                borderColor: intelData.warnings.length > 0 ? "warning.main" : "divider",
-                height: "100%",
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <WarningAmberIcon sx={{ color: "warning.main", fontSize: 20 }} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                    Warnings
-                  </Typography>
+            {/* Warnings */}
+            <Grid item xs={12} md={4}>
+              <IGCard
+                variant={intelData.warnings.length > 0 ? "warning" : "default"}
+                title="Warnings"
+                action={
                   <Chip
                     label={intelData.warnings.length}
                     size="small"
                     color={intelData.warnings.length > 0 ? "warning" : "default"}
-                    sx={{ fontWeight: 700, height: 20, fontSize: "0.7rem" }}
+                    sx={{ fontWeight: 700 }}
                   />
-                </Box>
+                }
+              >
                 {intelData.warnings.length === 0 ? (
                   <Typography variant="body2" color="text.secondary">
                     No warnings. Network performance is operating within normal
@@ -784,24 +474,18 @@ export default function DashboardPage() {
 
           {/* Actionable Recommendations */}
           <Grid item xs={12} md={4}>
-            <Card
-              variant="outlined"
-              sx={{ borderRadius: 3, borderColor: "divider", height: "100%" }}
+            <IGCard
+              title="Recommendations"
+              action={
+                <Chip
+                  label={intelData.recommendations.length}
+                  size="small"
+                  color="info"
+                  sx={{ fontWeight: 700 }}
+                />
+              }
             >
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <RecommendIcon sx={{ color: "info.main", fontSize: 20 }} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                    Recommendations
-                  </Typography>
-                  <Chip
-                    label={intelData.recommendations.length}
-                    size="small"
-                    color="info"
-                    sx={{ fontWeight: 700, height: 20, fontSize: "0.7rem" }}
-                  />
-                </Box>
-                {intelData.recommendations.length === 0 ? (
+              {intelData.recommendations.length === 0 ? (
                   <Typography variant="body2" color="text.secondary">
                     No actionable recommendations at this time.
                   </Typography>
@@ -853,11 +537,11 @@ export default function DashboardPage() {
                     ))}
                   </Stack>
                 )}
-              </CardContent>
-            </Card>
+              </IGCard>
+            </Grid>
           </Grid>
-        </Grid>
+        </IGSection>
       )}
-    </Box>
+    </IGPage>
   );
 }
