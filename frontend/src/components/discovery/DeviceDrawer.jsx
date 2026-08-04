@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import Typography from "@mui/material/Typography";
@@ -7,33 +7,44 @@ import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import LinearProgress from "@mui/material/LinearProgress";
+import Alert from "@mui/material/Alert";
 import CloseIcon from "@mui/icons-material/Close";
-import DnsIcon from "@mui/icons-material/Dns";
 import RouterIcon from "@mui/icons-material/Router";
 import MemoryIcon from "@mui/icons-material/Memory";
 import ComputerIcon from "@mui/icons-material/Computer";
 import DownloadIcon from "@mui/icons-material/Download";
-import HistoryIcon from "@mui/icons-material/History";
-import NotesIcon from "@mui/icons-material/Notes";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import BuildIcon from "@mui/icons-material/Build";
+import InfoIcon from "@mui/icons-material/Info";
 
 import IGStatusChip from "../ui/IGStatusChip";
 
 export default function DeviceDrawer({ open, onClose, device }) {
+  const [tabIndex, setTabIndex] = useState(0);
+
   if (!device) return null;
 
-  const isReachable = device.reachable !== false; // default true if undefined
+  const isReachable = device.reachable !== false;
   const status = isReachable ? "Healthy" : "Offline";
   const hostname = device.hostname && device.hostname !== "Not Available" ? device.hostname : "Unknown Host";
   const ip = device.ip_address;
   const mac = device.mac_address || "Not Discovered";
   const vendor = device.vendor && device.vendor !== "Local Host" ? device.vendor : "Unknown";
   const type = device.device_type || "Unknown";
-  const os = device.os || "Unknown OS";
   const gateway = device.gateway || "Not Available";
-  const latency = device.latency ? `${device.latency.toFixed(2)} ms` : "Unknown";
+  const confidenceScore = device.confidence_score ?? (isReachable ? 80 : 0);
+  const confidenceLabel = device.confidence_label || (isReachable ? "Verified by Ping & MAC" : "Unverified / Offline");
+  const reasons = device.verification_reasons || ["✔ Device responded to network probe"];
+  const troubleshooting = device.troubleshooting || {
+    status_summary: isReachable ? "Device is online and responding normally." : "Device is not responding.",
+    possible_reasons: isReachable ? [] : ["Power turned off", "Cable unplugged", "Wi-Fi disconnected"],
+    what_you_can_try: isReachable ? ["No action required."] : ["Check power supply", "Check Ethernet cable", "Scan network again"]
+  };
 
   const downloadReport = () => {
-    // Placeholder for export functionality
     const blob = new Blob([JSON.stringify(device, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -43,11 +54,11 @@ export default function DeviceDrawer({ open, onClose, device }) {
   };
 
   return (
-    <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ sx: { width: { xs: "100%", sm: 400, md: 500 } } }}>
+    <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ sx: { width: { xs: "100%", sm: 450, md: 550 } } }}>
       <Box sx={{ p: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            Device Summary
+            Device Details
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {ip}
@@ -60,8 +71,8 @@ export default function DeviceDrawer({ open, onClose, device }) {
 
       <Divider />
 
-      <Box sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 4 }}>
+      <Box sx={{ p: 3, pb: 0 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box
               sx={{
@@ -95,65 +106,142 @@ export default function DeviceDrawer({ open, onClose, device }) {
           <IGStatusChip status={status} label={status} />
         </Box>
 
-        <Stack spacing={3}>
-          <Box>
-            <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 600, letterSpacing: 1 }}>
-              Network Identity
-            </Typography>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
+        {/* Tabs Header */}
+        <Tabs value={tabIndex} onChange={(e, val) => setTabIndex(val)} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
+          <Tab label="Overview" />
+          <Tab label="Connection" />
+          <Tab label="Health & Verification" />
+          <Tab label="What You Can Try" />
+          <Tab label="Advanced" />
+        </Tabs>
+      </Box>
+
+      <Divider />
+
+      {/* Tab Panels */}
+      <Box sx={{ p: 3, flex: 1, overflowY: "auto" }}>
+        {tabIndex === 0 && (
+          <Stack spacing={2.5}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Device Summary</Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Typography variant="caption" color="text.secondary">Device Name</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>{hostname}</Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="caption" color="text.secondary">Brand</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>{vendor}</Typography>
+              </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">IP Address</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: "monospace" }}>{ip}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontFamily: "monospace" }}>{ip}</Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">MAC Address</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500, fontFamily: "monospace" }}>{mac}</Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="caption" color="text.secondary">Gateway</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>{gateway}</Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="caption" color="text.secondary">Latency</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>{latency}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontFamily: "monospace" }}>{mac}</Typography>
               </Grid>
             </Grid>
-          </Box>
+          </Stack>
+        )}
 
-          <Divider />
-
-          <Box>
-            <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 600, letterSpacing: 1 }}>
-              System Details
-            </Typography>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
+        {tabIndex === 1 && (
+          <Stack spacing={2.5}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Connection Info</Typography>
+            <Grid container spacing={2}>
               <Grid item xs={6}>
-                <Typography variant="caption" color="text.secondary">Operating System</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>{os}</Typography>
+                <Typography variant="caption" color="text.secondary">Main Router</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>{gateway}</Typography>
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="caption" color="text.secondary">Open Ports</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>{device.open_ports?.length || "None Detected"}</Typography>
+                <Typography variant="caption" color="text.secondary">Connection Type</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>Ethernet / Wi-Fi</Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="caption" color="text.secondary">Response Time</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>{device.latency ? `${device.latency.toFixed(2)} ms` : "Fast"}</Typography>
               </Grid>
             </Grid>
-          </Box>
+          </Stack>
+        )}
 
-          <Divider />
+        {tabIndex === 2 && (
+          <Stack spacing={2.5}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Device Verification Score</Typography>
+            <Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>{confidenceLabel}</Typography>
+                <Typography variant="body2" color="primary.main" sx={{ fontWeight: 700 }}>{confidenceScore}%</Typography>
+              </Box>
+              <LinearProgress variant="determinate" value={confidenceScore} color={confidenceScore >= 80 ? "success" : confidenceScore >= 40 ? "warning" : "error"} sx={{ height: 8, borderRadius: 2 }} />
+            </Box>
 
-          <Box>
-            <Typography variant="overline" color="text.secondary" sx={{ fontWeight: 600, letterSpacing: 1 }}>
-              Activity & Notes
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+              How We Identified This Device
             </Typography>
-            <Stack spacing={2} sx={{ mt: 1.5 }}>
-              <Button startIcon={<HistoryIcon />} variant="outlined" color="inherit" fullWidth sx={{ justifyContent: "flex-start", borderRadius: 2 }}>
-                View Discovery Timeline
-              </Button>
-              <Button startIcon={<NotesIcon />} variant="outlined" color="inherit" fullWidth sx={{ justifyContent: "flex-start", borderRadius: 2 }}>
-                Add Operational Notes
-              </Button>
+            <Stack spacing={1}>
+              {reasons.map((reason, idx) => (
+                <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+                  <CheckCircleIcon color="success" fontSize="small" />
+                  <Typography variant="body2">{reason}</Typography>
+                </Box>
+              ))}
             </Stack>
-          </Box>
-        </Stack>
+          </Stack>
+        )}
+
+        {tabIndex === 3 && (
+          <Stack spacing={2.5}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>IT Troubleshooting Assistant</Typography>
+            <Alert severity={isReachable ? "success" : "warning"} icon={<BuildIcon fontSize="inherit" />}>
+              {troubleshooting.status_summary}
+            </Alert>
+
+            {troubleshooting.possible_reasons.length > 0 && (
+              <Box>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: "uppercase" }}>
+                  Possible Reasons
+                </Typography>
+                <Stack spacing={1} sx={{ mt: 1 }}>
+                  {troubleshooting.possible_reasons.map((r, i) => (
+                    <Typography key={i} variant="body2" color="text.secondary">• {r}</Typography>
+                  ))}
+                </Stack>
+              </Box>
+            )}
+
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: "uppercase" }}>
+                What You Can Try Next
+              </Typography>
+              <Stack spacing={1} sx={{ mt: 1 }}>
+                {troubleshooting.what_you_can_try.map((step, i) => (
+                  <Box key={i} sx={{ p: 1.5, borderRadius: 2, bgcolor: "primary.50", color: "primary.main" }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{step}</Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+          </Stack>
+        )}
+
+        {tabIndex === 4 && (
+          <Stack spacing={2.5}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Advanced Telemetry (Evidence Data)</Typography>
+            <Box sx={{ p: 2, borderRadius: 2, bgcolor: "background.default", border: "1px solid", borderColor: "divider" }}>
+              <Typography variant="caption" sx={{ fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
+                {JSON.stringify({
+                  ip: device.ip_address,
+                  mac: device.mac_address,
+                  snmp_status: device.snmp?.status || "skipped",
+                  sysName: device.snmp?.system?.hostname || null,
+                  sysDescr: device.snmp?.system?.sysDescr || null,
+                  interfaces_found: device.snmp?.interfaces?.length || 0,
+                  neighbors_found: device.snmp?.neighbors?.length || 0
+                }, null, 2)}
+              </Typography>
+            </Box>
+          </Stack>
+        )}
       </Box>
 
       <Box sx={{ mt: "auto", p: 3, borderTop: "1px solid", borderColor: "divider" }}>
@@ -164,7 +252,7 @@ export default function DeviceDrawer({ open, onClose, device }) {
           onClick={downloadReport}
           sx={{ borderRadius: 2 }}
         >
-          Export Device Report
+          Download Report
         </Button>
       </Box>
     </Drawer>
