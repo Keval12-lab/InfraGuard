@@ -221,6 +221,26 @@ export default function DeviceDrawer({ open, onClose, device }) {
                 ))}
               </Stack>
             </Box>
+
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: "uppercase" }}>
+                Device Health Timeline
+              </Typography>
+              <Stack spacing={1} sx={{ mt: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyBetween: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 60 }}>09:12 AM</Typography>
+                  <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>Online (Ping Responded 1.4ms)</Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", justifyBetween: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 60 }}>10:40 AM</Typography>
+                  <Typography variant="body2" color="warning.main" sx={{ fontWeight: 600 }}>Intermittent Packet Loss Probe</Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", justifyBetween: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 60 }}>11:07 AM</Typography>
+                  <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>Verified & Online (ARP Cache Confirmed)</Typography>
+                </Box>
+              </Stack>
+            </Box>
           </Stack>
         )}
 
