@@ -25,6 +25,9 @@ from ..config import (
     PING_RETRY_COUNT,
 )
 
+from .mac_vendor_service import resolve_vendor_by_mac, classify_device
+from ..database.db import save_discovery_results
+
 logger = logging.getLogger("infraguard.discovery")
 
 
@@ -678,79 +681,24 @@ def resolve_hostname_layered(ip_str: str) -> str:
 
 def infer_device_info(ip_str: str, hostname: str) -> tuple[str, str, str]:
     """
-    Lightweight Device Identification & Vendor Cleanup:
-    - Vendor must NEVER display "Local Host" or hostnames. Default to "Unknown".
-    - Device type values: Router (Detected), Desktop (Estimated), Laptop (Estimated),
-      Mobile (Estimated), Printer (Estimated), Unknown.
+    Fallback inference if MAC/OUI is not available.
+    Returns: (device_name, device_type, vendor)
     """
     host_lower = hostname.lower() if hostname and hostname != "Not Available" else ""
-
-    # Loopback or self host
-    if ip_str == "127.0.0.1":
-        dev_name = hostname if hostname != "Not Available" else "Local Workstation"
-        return dev_name, "Desktop (Estimated)", "Unknown"
-
-    ip_parts = ip_str.split(".")
-    is_gateway = len(ip_parts) == 4 and ip_parts[3] in ("1", "254")
-
-    # Keyword patterns for vendor and device type
-    if any(k in host_lower for k in ["router", "gateway", "openwrt", "asus", "netgear", "tplink", "mikrotik", "unifi", "ubnt", "cisco"]):
-        vendor = (
-            "Cisco" if "cisco" in host_lower else
-            "Netgear" if "netgear" in host_lower else
-            "TP-Link" if "tplink" in host_lower else
-            "ASUS" if "asus" in host_lower else
-            "Ubiquiti" if ("ubnt" in host_lower or "unifi" in host_lower) else
-            "Unknown"
-        )
-        dev_name = hostname if hostname != "Not Available" else f"Network Router ({ip_str})"
-        return dev_name, "Router (Detected)", vendor
-
-    if any(k in host_lower for k in ["print", "hp", "epson", "canon", "brother", "lexmark", "xerox"]):
-        vendor = (
-            "HP" if "hp" in host_lower else
-            "Epson" if "epson" in host_lower else
-            "Canon" if "canon" in host_lower else
-            "Brother" if "brother" in host_lower else
-            "Unknown"
-        )
-        dev_name = hostname if hostname != "Not Available" else f"Network Printer ({ip_str})"
-        return dev_name, "Printer (Estimated)", vendor
-
-    if any(k in host_lower for k in ["phone", "android", "iphone", "ipad", "galaxy", "pixel", "mobile"]):
-        vendor = (
-            "Apple" if ("iphone" in host_lower or "ipad" in host_lower) else
-            "Samsung" if "galaxy" in host_lower else
-            "Google" if "pixel" in host_lower else
-            "Unknown"
-        )
-        dev_name = hostname if hostname != "Not Available" else f"Mobile Device ({ip_str})"
-        return dev_name, "Mobile (Estimated)", vendor
+    is_gateway = (ip_str.endswith(".1") or ip_str.endswith(".254"))
 
     if any(k in host_lower for k in ["macbook", "laptop", "thinkpad", "dell-lap", "surface", "book"]):
-        vendor = (
-            "Apple" if "macbook" in host_lower else
-            "Lenovo" if "thinkpad" in host_lower else
-            "Microsoft" if "surface" in host_lower else
-            "Dell" if "dell" in host_lower else
-            "Unknown"
-        )
         dev_name = hostname if hostname != "Not Available" else f"Laptop ({ip_str})"
-        return dev_name, "Laptop (Estimated)", vendor
+        return dev_name, "Laptop (Estimated)", "Unknown"
 
     if any(k in host_lower for k in ["pc", "desktop", "win", "workstation", "keval", "host"]):
-        vendor = "Microsoft" if "win" in host_lower else "Unknown"
         dev_name = hostname if hostname != "Not Available" else f"Workstation ({ip_str})"
-        return dev_name, "Desktop (Estimated)", vendor
+        return dev_name, "Desktop (Estimated)", "Unknown"
 
     if is_gateway:
         return f"Default Gateway ({ip_str})", "Router (Detected)", "Unknown"
 
-    dev_type = "Unknown"
-    vendor = "Unknown"
-    dev_name = hostname if hostname != "Not Available" else "Not Available"
-
-    return dev_name, dev_type, vendor
+    return hostname if hostname != "Not Available" else "Not Available", "Unknown", "Unknown"
 
 
 def ping_host(ip_str: str, timeout_ms: int = DISCOVERY_TIMEOUT) -> Optional[Dict[str, Any]]:
@@ -828,6 +776,20 @@ def execute_subnet_discovery(
         logger.error(f"[Discovery Error] Thread pool execution failed: {e}")
         raise RuntimeError("Network discovery scan encountered an internal execution error.")
 
+    arp_map = get_arp_table()
+    for dev in discovered_devices:
+        ip = dev["ip_address"]
+        hostname = dev["hostname"]
+        mac = arp_map.get(ip)
+        if mac:
+            dev["mac_address"] = mac
+            vendor = resolve_vendor_by_mac(mac)
+            if vendor != "Unknown":
+                dev["vendor"] = vendor
+            dev["device_type"] = classify_device(dev["vendor"], hostname, ip)
+        else:
+            dev["mac_address"] = None
+
     discovered_devices.sort(key=lambda d: [int(x) for x in d["ip_address"].split(".")])
     end_time = datetime.now(timezone.utc)
     duration_seconds = round((end_time - start_time).total_seconds(), 2)
@@ -847,8 +809,8 @@ def execute_subnet_discovery(
         )
     except Exception as te:
         logger.warning(f"Failed to record discovery timeline event: {te}")
-
-    return {
+        
+    final_results = {
         "subnet": str(network),
         "total_scanned": len(target_ips),
         "active_found": len(discovered_devices),
@@ -857,3 +819,13 @@ def execute_subnet_discovery(
         "scanned_at": end_time.isoformat(),
         "devices": discovered_devices,
     }
+    
+    try:
+        # Automatic Sync to Assets Database
+        history_id = save_discovery_results(final_results)
+        final_results["history_id"] = history_id
+        logger.info(f"Asset Database Synced automatically. History ID: {history_id}")
+    except Exception as db_err:
+        logger.error(f"Failed to sync discovery results to asset DB: {db_err}")
+
+    return final_results
