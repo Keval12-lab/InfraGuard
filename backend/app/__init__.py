@@ -21,6 +21,7 @@ from .routes.runbook import runbook_bp
 from .routes.automation import automation_bp
 from .routes.snmp import snmp_bp
 from .routes.auth import auth_bp
+from .routes.config_center import config_center_bp
 from .services.monitoring_service import start_monitoring_engine
 
 
@@ -57,6 +58,7 @@ def create_app() -> Flask:
     app.register_blueprint(automation_bp)
     app.register_blueprint(snmp_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(config_center_bp)
 
     # Centralized Security and Generic Error Handlers
     from .utils.security import SecurityValidationError, log_security_event

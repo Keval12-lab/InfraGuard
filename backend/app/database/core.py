@@ -512,6 +512,38 @@ def init_db():
         );
     """)
 
+    # Table 18: device_capabilities (Automatic Protocol Probe Engine)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS device_capabilities (
+            device_id INTEGER PRIMARY KEY,
+            has_ssh INTEGER DEFAULT 0,
+            has_telnet INTEGER DEFAULT 0,
+            has_snmp INTEGER DEFAULT 0,
+            has_http INTEGER DEFAULT 0,
+            has_https INTEGER DEFAULT 0,
+            has_winrm INTEGER DEFAULT 0,
+            has_rdp INTEGER DEFAULT 0,
+            has_smb INTEGER DEFAULT 0,
+            backup_supported INTEGER DEFAULT 0,
+            last_probed_at TEXT NOT NULL,
+            FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE
+        );
+    """)
+
+    # Table 19: config_backups (Multi-Vendor Config Version Store)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS config_backups (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            device_id INTEGER NOT NULL,
+            vendor TEXT NOT NULL,
+            config_text TEXT NOT NULL,
+            version_label TEXT NOT NULL,
+            checksum_sha256 TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE
+        );
+    """)
+
     conn.commit()
     conn.close()
     logger.info(f"[SQLite Init] Database schema initialized at {DB_PATH}")

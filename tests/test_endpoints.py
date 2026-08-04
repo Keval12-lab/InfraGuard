@@ -71,6 +71,13 @@ def test_endpoints():
     reused_resp = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {tech_token}"})
     assert reused_resp.status_code == 401
 
+    # 11. Configuration Center Test: Device Capabilities Overview
+    cfg_resp = client.get("/api/v1/config-center/overview", headers={"Authorization": f"Bearer {admin_token}"})
+    assert cfg_resp.status_code == 200
+    cfg_data = json.loads(cfg_resp.data)
+    assert cfg_data["status"] == "success"
+    assert "summary" in cfg_data
+
 if __name__ == "__main__":
     test_endpoints()
     print("All python API diagnostics tests & SECURITY AUDIT CHECKS PASSED successfully!")
