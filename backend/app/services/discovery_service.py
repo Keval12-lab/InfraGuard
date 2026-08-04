@@ -825,6 +825,46 @@ def execute_subnet_discovery(
         except Exception as snmp_err:
             logger.warning(f"SNMP thread pool error: {snmp_err}")
 
+    for dev in discovered_devices:
+        has_icmp = dev.get("reachable", False)
+        has_mac = bool(dev.get("mac_address"))
+        has_snmp = bool(dev.get("snmp") and dev["snmp"].get("status") == "success")
+
+        if has_icmp and has_mac and has_snmp:
+            dev["confidence_score"] = 100
+            dev["confidence_label"] = "Verified (ICMP + MAC + SNMP)"
+        elif has_icmp and has_mac:
+            dev["confidence_score"] = 80
+            dev["confidence_label"] = "Verified by Ping & MAC"
+        elif has_icmp:
+            dev["confidence_score"] = 40
+            dev["confidence_label"] = "Limited Info (Ping Only)"
+        else:
+            dev["confidence_score"] = 0
+            dev["confidence_label"] = "Not Verified / Offline"
+
+        if dev.get("reachable", True):
+            dev["troubleshooting"] = {
+                "status_summary": "Device is online and responding normally.",
+                "possible_reasons": [],
+                "what_you_can_try": ["No action required. Connection is healthy."]
+            }
+        else:
+            dev["troubleshooting"] = {
+                "status_summary": "Device is not responding on the network.",
+                "possible_reasons": [
+                    "Device is powered off or sleeping",
+                    "Network cable is unplugged or Wi-Fi is disconnected",
+                    "Local firewall is blocking incoming ping probes"
+                ],
+                "what_you_can_try": [
+                    "Check device power status",
+                    "Check network cable or Wi-Fi connection",
+                    "Try pinging the device again",
+                    "Scan the network again"
+                ]
+            }
+
     discovered_devices.sort(key=lambda d: [int(x) for x in d["ip_address"].split(".")])
     end_time = datetime.now(timezone.utc)
     duration_seconds = round((end_time - start_time).total_seconds(), 2)

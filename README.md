@@ -6,11 +6,22 @@
 ![Flask](https://img.shields.io/badge/Flask-3.x-000000.svg)
 ![Release](https://img.shields.io/badge/Release-v1.0.1-green.svg)
 
-> **"InfraGuard helps IT teams quickly find network problems, understand what happened, and know what to do next — using only verified information presented in simple language."**
+> **"InfraGuard helps IT support engineers quickly find device and network problems, explains what was verified, and provides practical next steps in simple language—without overwhelming users with networking jargon."**
 
 InfraGuard is an evidence-based IT Infrastructure Visibility and Troubleshooting Platform designed for small and medium businesses. Its primary objective is to help IT support engineers and system administrators manage their networks without requiring deep networking expertise. The platform prioritizes accuracy, simplicity, security, and actionable insights over feature quantity. 
 
 **Simple for users. Powerful behind the scenes.**
+
+---
+
+## ❓ Why InfraGuard?
+
+Most monitoring tools tell you: *"There is a problem."*
+
+**InfraGuard tells you:**
+- **Why** it happened.
+- **What evidence** was used to verify it.
+- **What you can try next** to fix it.
 
 ---
 
