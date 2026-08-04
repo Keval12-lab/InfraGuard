@@ -169,9 +169,14 @@ export default function DeviceDrawer({ open, onClose, device }) {
           <Stack spacing={2.5}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Verification & Confidence Status</Typography>
             <Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>{confidenceLabel}</Typography>
-                <Typography variant="body2" color="primary.main" sx={{ fontWeight: 700 }}>{confidenceScore}%</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="subtitle1" color="warning.main" sx={{ fontWeight: 800 }}>
+                    {confidenceScore >= 80 ? "★★★★★" : confidenceScore >= 60 ? "★★★★☆" : confidenceScore >= 40 ? "★★★☆☆" : "★☆☆☆☆"}
+                  </Typography>
+                  <Typography variant="body2" color="primary.main" sx={{ fontWeight: 700 }}>({confidenceScore}%)</Typography>
+                </Box>
               </Box>
               <LinearProgress variant="determinate" value={confidenceScore} color={confidenceScore >= 80 ? "success" : confidenceScore >= 40 ? "warning" : "error"} sx={{ height: 8, borderRadius: 2 }} />
             </Box>
