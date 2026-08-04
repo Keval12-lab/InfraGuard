@@ -468,8 +468,7 @@ export default function DashboardPage() {
                     ))}
                   </Stack>
                 )}
-              </CardContent>
-            </Card>
+              </IGCard>
           </Grid>
 
           {/* Actionable Recommendations */}
