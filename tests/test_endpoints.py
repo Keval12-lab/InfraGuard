@@ -78,6 +78,20 @@ def test_endpoints():
     assert cfg_data["status"] == "success"
     assert "summary" in cfg_data
 
+    # 12. Credential Vault Test: Add and List Credentials
+    cred_create = client.post("/api/v1/vault/credentials", json={
+        "name": "Cisco Core Switch Admin",
+        "cred_type": "SSH",
+        "username": "admin_cisco",
+        "password": "SecretCiscoPassword123!"
+    }, headers={"Authorization": f"Bearer {admin_token}"})
+    assert cred_create.status_code == 201
+
+    cred_list = client.get("/api/v1/vault/credentials", headers={"Authorization": f"Bearer {admin_token}"})
+    assert cred_list.status_code == 200
+    list_data = json.loads(cred_list.data)
+    assert list_data["count"] >= 1
+
 if __name__ == "__main__":
     test_endpoints()
     print("All python API diagnostics tests & SECURITY AUDIT CHECKS PASSED successfully!")

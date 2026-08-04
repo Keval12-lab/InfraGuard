@@ -544,6 +544,21 @@ def init_db():
         );
     """)
 
+    # Table 20: credentials (Encrypted Credential Vault)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS credentials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            cred_type TEXT NOT NULL,
+            username TEXT NOT NULL,
+            password_encrypted TEXT NOT NULL,
+            snmp_community TEXT,
+            notes TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+    """)
+
     conn.commit()
     conn.close()
     logger.info(f"[SQLite Init] Database schema initialized at {DB_PATH}")
