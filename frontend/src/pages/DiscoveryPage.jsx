@@ -13,8 +13,6 @@ import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -39,10 +37,12 @@ import { useForm, Controller } from "react-hook-form";
 // Icons
 
 // Shared Reusable Components & Hooks
+import IGPageHeader from "../components/ui/IGPageHeader";
+import IGPage from "../components/ui/IGPage";
+import IGCard from "../components/ui/IGCard";
+import IGSection from "../components/ui/IGSection";
 import EmptyState from "../components/common/EmptyState";
 import MetricCard from "../components/common/MetricCard";
-import PageHeader from "../components/common/PageHeader";
-import SectionHeader from "../components/common/SectionHeader";
 import StatusChip from "../components/common/StatusChip";
 import NetworkIdentityCard from "../components/discovery/NetworkIdentityCard";
 import NetworkQualityCard from "../components/discovery/NetworkQualityCard";
@@ -115,12 +115,11 @@ export default function DiscoveryPage() {
   };
 
   return (
-    <Box sx={{ maxWidth: 1280, mx: "auto", pb: 6 }}>
+    <IGPage>
       {/* 1. Page Header */}
-      <PageHeader
-        breadcrumb="ZORVIA / NETWORK DISCOVERY"
-        title="Network Asset Discovery"
-        subtitle="Powered by InfraGuard Engine — Auto-detect local subnets and discover active infrastructure hosts."
+      <IGPageHeader
+        title="Network Discovery"
+        subtitle="Detect, scan and identify devices on your LAN."
         action={
           <Button
             variant="outlined"
@@ -140,54 +139,73 @@ export default function DiscoveryPage() {
         }
       />
 
-      {/* 2. Enterprise Workflow Stepper Bar */}
-      <Card sx={{ mb: 4, borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
-        <CardContent sx={{ py: 2.5, px: 3 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
-            {WORKFLOW_STEPS.map((label, idx) => (
-              <Step key={label} completed={activeStep > idx}>
-                <StepLabel
-                  StepIconProps={{
-                    sx: {
-                      fontSize: 24,
-                      "&.Mui-active": { color: "primary.main" },
-                      "&.Mui-completed": { color: "success.main" },
-                    },
+      {/* 2. Network Context & Quality Cards (Equal Height Row) */}
+      <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
+        <Grid item xs={12} md={6} sx={{ display: "flex" }}>
+          <Box sx={{ width: "100%" }}>
+            <NetworkIdentityCard
+              data={detectedSubnetData}
+              isLoading={isDetecting}
+              isRefetching={isRefetchingSubnet}
+              onRefresh={refetchSubnet}
+            />
+          </Box>
+        </Grid>
+        <Grid item xs={12} md={6} sx={{ display: "flex" }}>
+          <Box sx={{ width: "100%" }}>
+            <NetworkQualityCard
+              data={networkQualityData}
+              isLoading={isDetectingQuality}
+              isRefetching={isRefetchingQuality}
+              onRefresh={refetchQuality}
+            />
+          </Box>
+        </Grid>
+      </Grid>
+
+      {/* 3. Enterprise Workflow Stepper Bar */}
+      <IGCard>
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {WORKFLOW_STEPS.map((label, idx) => (
+            <Step key={label} completed={activeStep > idx}>
+              <StepLabel
+                StepIconProps={{
+                  sx: {
+                    fontSize: 24,
+                    "&.Mui-active": { color: "primary.main" },
+                    "&.Mui-completed": { color: "success.main" },
+                  },
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: activeStep === idx ? 700 : 500,
+                    color: activeStep === idx ? "primary.main" : "text.secondary",
                   }}
                 >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontWeight: activeStep === idx ? 700 : 500,
-                      color: activeStep === idx ? "primary.main" : "text.secondary",
-                    }}
-                  >
-                    Step {idx + 1}: {label}
-                  </Typography>
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </CardContent>
-      </Card>
+                  Step {idx + 1}: {label}
+                </Typography>
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </IGCard>
 
-      {/* 3. Subnet Input & Interface Context Grid (React Hook Form + Zod) */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={7}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              border: "1px solid",
-              borderColor: "divider",
-              height: "100%",
-            }}
-          >
-            <CardContent sx={{ p: 3, component: "form" }}>
+      {/* 4. Subnet Input & Discovery Controls (React Hook Form) */}
+      <IGSection title="Discovery Controls">
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={8} xl={9}>
+            <IGCard sx={{ height: "100%" }}>
               <Box component="form" onSubmit={handleSubmit(onScanSubmit)}>
-                <SectionHeader
-                  title="Step 1: Choose Network Range"
-                  description="Specify target IPv4 CIDR address range for network scanning."
-                />
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
+                    Step 1: Choose Network Range
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    Specify target IPv4 CIDR address range for network scanning.
+                  </Typography>
+                </Box>
                 <Box sx={{ mt: 2.5 }}>
                   <Controller
                     name="subnet"
@@ -211,13 +229,8 @@ export default function DiscoveryPage() {
                 </Box>
 
                 {/* Step 2: Scan Protocol Options */}
-                <Box
-                  sx={{ mt: 3, pt: 2, borderTop: "1px solid", borderColor: "divider" }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}
-                  >
+                <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid", borderColor: "divider" }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.primary", mb: 1 }}>
                     Step 2: Review Scan Options
                   </Typography>
                   <Controller
@@ -233,12 +246,7 @@ export default function DiscoveryPage() {
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                 ICMP Ping Discovery
                               </Typography>
-                              <Chip
-                                label="Active Protocol"
-                                color="primary"
-                                size="small"
-                                sx={{ height: 20, fontSize: "0.68rem" }}
-                              />
+                              <Chip label="Active Protocol" color="primary" size="small" sx={{ height: 20, fontSize: "0.68rem" }} />
                             </Box>
                           }
                         />
@@ -251,12 +259,7 @@ export default function DiscoveryPage() {
                               <Typography variant="body2" color="text.secondary">
                                 SNMP Deep Discovery
                               </Typography>
-                              <Chip
-                                label="Future Scope"
-                                variant="outlined"
-                                size="small"
-                                sx={{ height: 20, fontSize: "0.68rem" }}
-                              />
+                              <Chip label="Future Scope" variant="outlined" size="small" sx={{ height: 20, fontSize: "0.68rem" }} />
                             </Box>
                           }
                         />
@@ -271,13 +274,7 @@ export default function DiscoveryPage() {
                     type="submit"
                     variant="contained"
                     size="large"
-                    startIcon={
-                      isScanning ? (
-                        <CircularProgress size={20} color="inherit" />
-                      ) : (
-                        <PlayArrowIcon />
-                      )
-                    }
+                    startIcon={isScanning ? <CircularProgress size={20} color="inherit" /> : <PlayArrowIcon />}
                     disabled={isScanning}
                     sx={{ borderRadius: 2.5, px: 4, py: 1.2, fontWeight: 600 }}
                   >
@@ -285,72 +282,40 @@ export default function DiscoveryPage() {
                   </Button>
                 </Box>
               </Box>
-            </CardContent>
-          </Card>
+            </IGCard>
+          </Grid>
         </Grid>
-
-        {/* Network Context & Quality Cards */}
-        <Grid item xs={12} md={5}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3, height: "100%" }}>
-            <Box sx={{ flex: 1 }}>
-              <NetworkIdentityCard 
-                data={detectedSubnetData} 
-                isLoading={isDetecting} 
-                isRefetching={isRefetchingSubnet} 
-                onRefresh={refetchSubnet} 
-              />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <NetworkQualityCard 
-                data={networkQualityData} 
-                isLoading={isDetectingQuality} 
-                isRefetching={isRefetchingQuality} 
-                onRefresh={refetchQuality} 
-              />
-            </Box>
-          </Box>
-        </Grid>
-      </Grid>
+      </IGSection>
 
       {/* 4. Scanning Progress State */}
       {isScanning && (
-        <Card
-          sx={{
-            mb: 4,
-            borderRadius: 3,
-            border: "1px solid",
-            borderColor: "primary.main",
-            boxShadow: "0 0 12px rgba(2, 132, 199, 0.15)",
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                <CircularProgress size={24} color="primary" />
-                <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary" }}>
-                  Scanning Subnet ({cidrValue})...
-                </Typography>
-              </Box>
-              <StatusChip status="SCANNING" label="Scanning" />
+        <IGCard sx={{ borderColor: "primary.main", boxShadow: "0 0 12px rgba(2, 132, 199, 0.15)" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <CircularProgress size={24} color="primary" />
+              <Typography variant="h6" sx={{ fontWeight: 600, color: "text.primary" }}>
+                Scanning Subnet ({cidrValue})...
+              </Typography>
             </Box>
-            <LinearProgress sx={{ borderRadius: 2, height: 8, mb: 1.5 }} />
-            <Typography variant="caption" color="text.secondary">
-              Step 3: Probing IP host addresses via multi-threaded ICMP requests...
-            </Typography>
-          </CardContent>
-        </Card>
+            <StatusChip status="SCANNING" label="Scanning" />
+          </Box>
+          <LinearProgress sx={{ borderRadius: 2, height: 8, mb: 1.5 }} />
+          <Typography variant="caption" color="text.secondary">
+            Step 3: Probing IP host addresses via multi-threaded ICMP requests...
+          </Typography>
+        </IGCard>
       )}
 
       {/* 5. Error Banner */}
       {errorMessage && (
-        <Alert severity="error" sx={{ mb: 4, borderRadius: 3 }}>
+        <Alert severity="error" sx={{ borderRadius: 3 }}>
           <AlertTitle sx={{ fontWeight: 700 }}>Discovery Error</AlertTitle>
           {errorMessage}
         </Alert>
@@ -358,21 +323,10 @@ export default function DiscoveryPage() {
 
       {/* 6. Step 4: Comprehensive Discovery Summary Cards */}
       {scanResult && (
-        <Box sx={{ mb: 4 }}>
-          <Box
-            sx={{
-              mb: 2,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Step 4: Discovery Summary
-            </Typography>
-            <StatusChip status="COMPLETED" label="Discovery Completed" />
-          </Box>
-
+        <IGSection
+          title="Step 4: Discovery Summary"
+          action={<StatusChip status="COMPLETED" label="Discovery Completed" />}
+        >
           <Grid container spacing={2.5}>
             <Grid item xs={12} sm={6} md={3}>
               <MetricCard
@@ -428,20 +382,18 @@ export default function DiscoveryPage() {
               />
             </Grid>
           </Grid>
-        </Box>
+        </IGSection>
       )}
 
       {/* 7. Results Table */}
-      <Box sx={{ mt: 2 }}>
-        <SectionHeader
-          title="Discovered Network Assets"
-          description={
-            scanResult
-              ? `Displaying ${scanResult.active_found} reachable hosts discovered on subnet ${scanResult.subnet}.`
-              : "Discovered host IP addresses will appear here once a subnet scan completes."
-          }
-        />
-
+      <IGSection
+        title="Discovered Network Assets"
+        description={
+          scanResult
+            ? `Displaying ${scanResult.active_found} reachable hosts discovered on subnet ${scanResult.subnet}.`
+            : "Discovered host IP addresses will appear here once a subnet scan completes."
+        }
+      >
         {!scanResult && !isScanning && (
           <EmptyState
             icon={<RadarIcon sx={{ fontSize: 52, color: "primary.main" }} />}
@@ -568,7 +520,7 @@ export default function DiscoveryPage() {
             </Table>
           </TableContainer>
         )}
-      </Box>
-    </Box>
+      </IGSection>
+    </IGPage>
   );
 }
