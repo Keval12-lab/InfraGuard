@@ -187,24 +187,25 @@ graph TD
 
 ## 📊 Comprehensive Device & Hardware Discovery Matrix
 
-| Hardware Category | Detectable? | Telemetry & Information Extracted | Evidence Verified |
+| Hardware Category | Detectable? | Telemetry & Information Extracted | Discovery Condition & Source |
 | :--- | :---: | :--- | :--- |
-| **Windows PC / Laptop** | ✅ | Hostname, IP, MAC Address, Vendor, OS, Latency | ICMP + MAC + Hostname |
-| **Linux Server** | ✅ | Hostname, IP, MAC, OS, Active Interfaces, Latency | ICMP + MAC + SNMP |
-| **Android Mobile** | ✅ | IP, MAC, Brand Vendor (Samsung/Google), Latency | ICMP + MAC Vendor |
-| **Apple iPhone** | ✅ | IP, Brand Vendor (Apple Inc.), Latency, Privacy Safeguards | ICMP + MAC Vendor |
-| **Jio / ISP Gateway Router** | ✅ | Gateway IP, MAC Address, Vendor (Jio Infocomm), Latency | ICMP + MAC + Gateway |
-| **TP-Link / D-Link Router** | ✅ | Gateway IP, MAC, Vendor, SNMP Model Details (if enabled) | ICMP + MAC + SNMP |
-| **Cisco Enterprise Router** | ✅ | Hostname, Model, IOS Version, Uptime, CPU, RAM, Interfaces | ICMP + MAC + SNMP MIB |
-| **Cisco Managed Switch** | ✅ | Port Status, VLAN, LLDP/CDP Neighbors, System Uptime | ICMP + MAC + LLDP/CDP |
-| **HP / Aruba Switch** | ✅ | Switch Hostname, Active Port Count, Uptime, System Descr | ICMP + MAC + SNMP |
-| **Ruijie Enterprise Switch** | ✅ | Model, Active Interfaces, CPU & Memory Usage | ICMP + MAC + SNMP |
-| **Ubiquiti Access Point** | ✅ | AP Name, IP, MAC Address, Vendor (Ubiquiti Networks) | ICMP + MAC Vendor |
-| **IP Camera (Hikvision/Dahua)**| ✅ | IP, MAC, Brand Vendor, Port Reachability, Status | ICMP + MAC Vendor |
-| **DVR / NVR Storage Unit** | ✅ | IP, MAC, Brand Vendor, System Uptime, Interface Count | ICMP + MAC + SNMP |
-| **Enterprise Network Printer** | ✅ | Ink/Toner Levels, Paper Tray Status, Serial Number, Model | ICMP + MAC + Printer MIB |
-| **Storage NAS (Synology/QNAP)**| ✅ | NAS Name, Storage Volume Health, Disk Status, CPU/RAM | ICMP + MAC + SNMP |
-| **VMware ESXi Host** | ✅ | Hostname, IP, MAC, OS Version, System Uptime | ICMP + MAC + SNMP MIB |
+| **Windows PC / Laptop** | ✅ | IP, MAC, Device Name, Latency | ICMP Ping + ARP Cache |
+| **Windows OS / User Details**| ✅ | Detailed OS Version, Logged-in User, CPU/RAM | SNMP Enabled / Agent / WMI |
+| **Linux Server** | ✅ | Hostname, OS Kernel, Active Interfaces | SNMP MIB-II Enabled |
+| **Android Mobile** | ✅ | IP, MAC, Brand Vendor (Samsung/Google) | ARP OUI (Depends on MAC Randomization) |
+| **Apple iPhone** | ✅ | IP, Brand Vendor (Apple Inc.), Latency | ARP OUI (Depends on MAC Randomization) |
+| **Jio / ISP Gateway Router** | ✅ | Gateway IP, MAC Address, Vendor (Jio Infocomm) | ICMP + ARP Gateway Detection |
+| **TP-Link / D-Link Router** | ✅ | Gateway IP, MAC, SNMP Model & Firmware | SNMP Service Enabled |
+| **Cisco Enterprise Router** | ✅ | Hostname, Model, IOS Version, Uptime, CPU/RAM | SNMP v2c / v3 Enabled |
+| **Cisco Managed Switch** | ✅ | Port Status, VLAN, LLDP/CDP Neighbors | SNMP + LLDP/CDP Protocol Enabled |
+| **HP / Aruba Switch** | ✅ | Switch Hostname, Active Ports, System Descr | SNMP MIB Enabled |
+| **Ruijie Enterprise Switch** | ✅ | Model, Active Interfaces, CPU & Memory | SNMP Service Enabled |
+| **Ubiquiti Access Point** | ✅ | AP Name, IP, MAC Address, Vendor | ICMP + MAC Vendor Lookup |
+| **IP Camera (Hikvision/Dahua)**| ✅ | IP, MAC, Brand Vendor, Port Reachability | ICMP + MAC / HTTP API |
+| **DVR / NVR Storage Unit** | ✅ | IP, MAC, Brand Vendor, System Uptime | ICMP + MAC + SNMP |
+| **Enterprise Network Printer** | ✅ | Ink/Toner Levels, Paper Status, Serial | Printer MIB (RFC 3805) Available |
+| **Storage NAS (Synology/QNAP)**| ✅ | NAS Name, Storage Volume Health, Disk Status | SNMP / Synology MIB Enabled |
+| **VMware ESXi Host** | ✅ | Hostname, IP, MAC, OS Version, System Uptime | SNMP MIB-II Enabled |
 
 ---
 
