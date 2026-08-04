@@ -25,12 +25,14 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
+import Grid from "@mui/material/Grid";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 // Shared Reusable Components & Hooks
 import InfrastructurePassportDialog from "../components/assets/InfrastructurePassportDialog";
 import SnmpInspectorDialog from "../components/assets/SnmpInspectorDialog";
+import IGRecommendationCard from "../components/ui/IGRecommendationCard";
 import EmptyState from "../components/common/EmptyState";
 import PageHeader from "../components/common/PageHeader";
 import SectionHeader from "../components/common/SectionHeader";
@@ -209,7 +211,53 @@ export default function AssetsPage() {
         </Alert>
       )}
 
-      {/* 3. Assets Table Section */}
+      {/* 3. Attention Center Section */}
+      <Box sx={{ mb: 4 }}>
+        <SectionHeader
+          title="Attention Center & Diagnostics"
+          description="High-priority actionable recommendations to resolve network anomalies faster."
+        />
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <IGRecommendationCard
+              issueTitle="HP LaserJet Printer Unreachable"
+              possibleReason="Power cable disconnected or ethernet switch port #4 disabled"
+              verifications={[
+                { label: "Ping Probe", verified: false },
+                { label: "MAC ARP", verified: true },
+                { label: "SNMP MIB", verified: false },
+              ]}
+              steps={[
+                "Check power cable and green LED light on rear panel",
+                "Verify RJ45 Ethernet patch cable connected to switch port",
+                "Run subnet discovery to verify IP lease status",
+              ]}
+              confidence={80}
+              onActionClick={() => navigate("/discovery")}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <IGRecommendationCard
+              issueTitle="High Latency Warning on Core Gateway"
+              possibleReason="High ICMP round-trip latency detected (>120ms)"
+              verifications={[
+                { label: "Ping Probe", verified: true },
+                { label: "MAC ARP", verified: true },
+                { label: "SNMP MIB", verified: true },
+              ]}
+              steps={[
+                "Inspect local router CPU and memory load",
+                "Check top bandwidth user devices on local subnet",
+                "Contact ISP support if uplink packet loss continues",
+              ]}
+              confidence={95}
+              onActionClick={() => refetch()}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* 4. Assets Table Section */}
       <Box sx={{ mt: 2 }}>
         <SectionHeader
           title="Monitored Infrastructure Assets"
