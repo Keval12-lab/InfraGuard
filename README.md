@@ -46,6 +46,18 @@ Most monitoring tools tell you: *"There is a problem."*
 
 ---
 
+## 🌐 Deployment Modes & Cloud Architecture
+
+| Deployment Mode | Supported Status | Description & Capabilities |
+| :--- | :---: | :--- |
+| **Local Mode (Full Execution)** | ✅ Active | Runs directly on local Windows/Linux server. Full multi-threaded ICMP, ARP, SNMP, and LLDP subnet discovery on local LAN. |
+| **Cloud Demo Mode** | ✅ Active | Hosted on Vercel/Render. Demonstrates complete UI, reports, and simulated interview dataset. Live LAN discovery is disabled on cloud hosts due to private network isolation. |
+| **Cloud + InfraGuard Beacon (Planned v2.0)** | 🚧 Planned | Lightweight local collector (`InfraGuard Beacon`) runs inside customer's office LAN, collects local telemetry, and securely syncs encrypted metrics via HTTPS to Cloud Dashboard & Mobile App. |
+
+---
+
+---
+
 ## ⭐ Highlights & Capabilities
 
 - **Defensive Network Discovery:** Subnet scanner detecting active network entities with zero-overhead ICMP/ARP probes.
