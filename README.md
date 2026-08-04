@@ -12,16 +12,49 @@ InfraGuard is an evidence-based IT Infrastructure Visibility and Troubleshooting
 
 **Simple for users. Powerful behind the scenes.**
 
+## 🚀 The InfraGuard Product Family
+
+InfraGuard is designed as an enterprise-grade product ecosystem:
+
+- ☁ **InfraGuard Cloud**: Centralized SaaS API & analytics engine for multi-office management.
+- 💻 **InfraGuard Web**: Modern React 19 / Material-UI operational dashboard & troubleshooting hub.
+- 📱 **InfraGuard Mobile**: iOS & Android management app for real-time alerts & action suggestions.
+- 📡 **InfraGuard Beacon**: Open-source, lightweight local network collector running inside customer office subnets.
+- ⚡ **InfraGuard API**: High-performance REST API layer powering telemetry & reporting.
+
 ---
 
-## ❓ Why InfraGuard?
+## 🎯 Target Audience & Use Cases
 
-Most monitoring tools tell you: *"There is a problem."*
+| Who is InfraGuard FOR? | Who is InfraGuard NOT FOR? |
+| :--- | :--- |
+| ✅ **IT Support Engineers & SysAdmins** needing fast troubleshooting | ❌ **Penetration Testing or Hacking** |
+| ✅ **Managed Service Providers (MSPs)** monitoring multi-tenant client subnets | ❌ **Offensive Security Exploitation** |
+| ✅ **Small & Medium Businesses (SMBs)** without dedicated CCIE network teams | ❌ **Network Attacks or Vulnerability Scanning** |
+| ✅ **Schools, Hospitals, Manufacturing & Retail Offices** | ❌ **Unsanctioned Port / Network Intrusion** |
 
-**InfraGuard tells you:**
-- **Why** it happened.
-- **What evidence** was used to verify it.
-- **What you can try next** to fix it.
+---
+
+## 🔒 InfraGuard Beacon: Open & Auditable Trust Boundaries
+
+To build 100% trust with SMB owners and security researchers, **InfraGuard Beacon** is strictly auditable:
+
+```
+                  ┌─────────────────────────────────────────┐
+                  │          InfraGuard Beacon              │
+                  │   (Open-Source Local Collector)         │
+                  └────────────────────┬────────────────────┘
+                                       │
+            ┌──────────────────────────┴──────────────────────────┐
+            ▼                                                     ▼
+    ✔ WHAT BEACON DOES                                    ✖ WHAT BEACON NEVER DOES
+  ───────────────────────                                ───────────────────────────
+  • Discovers LAN devices via ICMP/ARP                    • NO Remote Desktop / VNC
+  • Collects SNMP/LLDP telemetry                          • NO File Access or Reading
+  • Measures network health & latency                     • NO Command Execution / Shell
+  • Queues scan data during internet outage               • NO PC Shutdown or Reboot
+  • Encrypts & posts HTTPS metric updates                 • NO Software Installation
+```
 
 ---
 
