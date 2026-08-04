@@ -409,19 +409,34 @@ export default function DiscoveryPage() {
             </Grid>
           </Grid>
 
-          <Box sx={{ mt: 3, p: 2, borderRadius: 3, bgcolor: "success.50", border: "1px solid", borderColor: "success.200", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <CheckCircleOutlineIcon color="success" />
-              <Box>
-                <Typography variant="subtitle2" color="success.dark" sx={{ fontWeight: 700 }}>
-                  Overall Discovery Quality: Excellent (100% Evidence Verified)
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {scanResult.active_found} Active Devices Identified • {scanResult.duration_seconds}s Scan Speed • Zero Assumed / Guessed Hostnames
+          <Box sx={{ mt: 3, p: 2.5, borderRadius: 3, bgcolor: "success.50", border: "1px solid", borderColor: "success.200" }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <CheckCircleOutlineIcon color="success" />
+                <Typography variant="subtitle1" color="success.dark" sx={{ fontWeight: 700 }}>
+                  Overall Discovery Quality: Excellent
                 </Typography>
               </Box>
+              <Chip label={`Scan completed in ${scanResult.duration_seconds} seconds`} color="success" size="small" variant="outlined" />
             </Box>
-            <Chip label="High Confidence Scan" color="success" size="small" />
+
+            <Grid container spacing={2} sx={{ mb: 1.5 }}>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>Verified Devices: {scanResult.active_found}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2" color="text.secondary">Limited Information: {scanResult.unreachable_count || 0}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2" color="text.secondary">Offline Devices: {scanResult.total_scanned - scanResult.active_found}</Typography>
+              </Grid>
+            </Grid>
+
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", pt: 1, borderTop: "1px dashed", borderColor: "success.200" }}>
+              <Typography variant="caption" color="success.dark" sx={{ fontWeight: 600 }}>✔ No guessed information</Typography>
+              <Typography variant="caption" color="success.dark" sx={{ fontWeight: 600 }}>✔ No assumed hostnames</Typography>
+              <Typography variant="caption" color="success.dark" sx={{ fontWeight: 600 }}>✔ Only verified devices shown</Typography>
+            </Box>
           </Box>
         </IGSection>
       )}

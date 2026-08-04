@@ -1,25 +1,26 @@
-# InfraGuard Manual Test Cases Audit Log (v1.3 Stabilization Sprint)
+# InfraGuard Manual Test Cases & Hardware Validation Log
 
-This document tracks execution and verification of manual field test scenarios across real-world SMB infrastructure environments.
+This document maintains strict adherence to the **"Never Guess"** philosophy. Devices are explicitly labeled as **Verified** (physically tested on live hardware), **Simulated** (interview practice mode), or **Pending Validation** (targeted lab specs).
 
-## 🧪 Test Suite Execution Matrix
+## 🧪 Test Execution Matrix
 
-| Test ID | Test Scenario | Target Device / Environment | Expected Result | Actual Result | Status |
-| :---: | :--- | :--- | :--- | :--- | :---: |
-| **TC-01** | Gateway Discovery | Jio Fiber Router (`192.168.29.1`) | Classified as Gateway + Jio OUI | Identified correctly with 100% confidence | ✅ PASS |
-| **TC-02** | Wireless Router Scan | TP-Link Archer C6 (`192.168.1.1`) | Detected IP + MAC + SNMP sysDescr | Identified sysDescr & model | ✅ PASS |
-| **TC-03** | Managed L2 Switch | Cisco Catalyst 2960 (`192.168.29.2`) | Discovered 50 interfaces + 4 neighbors | Extracted IF-MIB + LLDP topology | ✅ PASS |
-| **TC-04** | Windows Desktop Probe | Windows 11 PC (`192.168.29.25`) | Hostname, IP, MAC resolved | Discovered via ICMP + NetBIOS | ✅ PASS |
-| **TC-05** | IP Camera Telemetry | Hikvision DS-2CD2143 (`192.168.29.55`) | Verified Vendor OUI + Port 80 | Detected as Hikvision Digital Tech | ✅ PASS |
-| **TC-06** | Network Attached Storage | Synology DS920+ (`192.168.29.100`) | Extracted Synology MIB storage health | Volume Health: Healthy (100%) | ✅ PASS |
-| **TC-07** | Network Printer Audit | HP OfficeJet Pro (`192.168.29.40`) | Printer MIB Toner & Status | Toner levels extracted via SNMP | ✅ PASS |
-| **TC-08** | Offline Device Recovery | Cable Unplugged Test | Marked as "Offline" with last seen | Displayed "Offline - Last Seen 2 mins ago" | ✅ PASS |
-| **TC-09** | Mobile MAC Randomization | Android / Apple Smartphone | Identified IP + MAC Vendor (Apple/Samsung) | Handled randomized MAC gracefully | ✅ PASS |
-| **TC-10** | Practice Network Simulation | Demo Trigger (`/api/v1/discovery/demo`)| Loads 8 realistic SMB devices | Instant 100% populated demo dataset | ✅ PASS |
+| Test ID | Test Scenario | Target Hardware / Environment | Status | Verification Detail / Audit Note |
+| :---: | :--- | :--- | :---: | :--- |
+| **TC-01** | Gateway Discovery | Jio Fiber Gateway (`192.168.29.1`) | 🟢 Verified | ICMP + ARP resolved Jio Infocomm OUI & Gateway IP |
+| **TC-02** | Windows Workstation | Windows 11 Laptop (`192.168.29.25`) | 🟢 Verified | ICMP + NetBIOS hostname resolution verified |
+| **TC-03** | Smartphone MAC Privacy | Android / iPhone Device | 🟢 Verified | ARP OUI brand detection with privacy MAC handling |
+| **TC-04** | Cable / Offline Recovery | Unplugged Host Diagnostic | 🟢 Verified | Marked "Offline - Last Seen 2 mins ago" |
+| **TC-05** | Practice Network Simulation| Interview Practice Mode | 🔵 Simulated | 8-device realistic SMB enterprise dataset loaded |
+| **TC-06** | Wireless Router Scan | TP-Link Archer C6 (`192.168.1.1`) | 🟡 Pending | Target spec for physical lab verification |
+| **TC-07** | Enterprise Managed Switch | Cisco Catalyst 2960 (`192.168.29.2`) | 🟡 Pending | Target spec for SNMP IF-MIB / LLDP verification |
+| **TC-08** | IP Camera Telemetry | Hikvision DS-2CD2143 (`192.168.29.55`) | 🟡 Pending | Target spec for HTTP / OUI vendor verification |
+| **TC-09** | Storage NAS Health | Synology DiskStation DS920+ | 🟡 Pending | Target spec for Synology MIB storage verification |
+| **TC-10** | Network Printer Audit | HP OfficeJet Pro (`192.168.29.40`) | 🟡 Pending | Target spec for Printer MIB (RFC 3805) verification |
 
-## 📊 Summary
-- **Total Test Cases:** 10
-- **Passed:** 10 (100%)
-- **Failed:** 0
-- **Verification Date:** 2026-08-04
-- **Release Sign-off:** ✅ InfraGuard v1.3 Stabilization Sprint Passed
+## 📊 Status Legend & Breakdown
+- 🟢 **Verified**: Physically tested on live local network hardware.
+- 🔵 **Simulated**: Simulated dataset for interview demonstration mode (`/api/v1/discovery/demo`).
+- 🟡 **Pending Validation**: Target hardware spec defined; pending physical device access in lab.
+
+## 🎯 Verification Guarantee
+> *"InfraGuard only displays information that it can verify using one or more network sources. Zero guessed hostnames or fabricated switch topologies."*
