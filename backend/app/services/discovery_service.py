@@ -176,18 +176,30 @@ def _detect_gateway() -> Optional[str]:
                 ["ipconfig"],
                 capture_output=True, text=True, timeout=5
             )
-            for line in result.stdout.splitlines():
+            lines = result.stdout.splitlines()
+            for i, line in enumerate(lines):
                 if "Default Gateway" in line:
+                    # It might be on the same line after the colon
                     parts = line.split(":")
-                    if len(parts) == 2:
-                        gw = parts[1].strip()
-                        if gw and gw not in ("", "None", ":"):
-                            try:
-                                ipaddress.ip_address(gw)
+                    gw = parts[-1].strip() if len(parts) > 1 else ""
+                    
+                    # If it's empty, or an IPv6 address, check the next line for IPv4
+                    if not gw or "%" in gw or ":" in gw:
+                        # Try to find a valid IPv4 on the next line
+                        if i + 1 < len(lines):
+                            next_line_gw = lines[i + 1].strip()
+                            if next_line_gw and ":" not in next_line_gw:
+                                gw = next_line_gw
+
+                    if gw:
+                        try:
+                            # Only accept IPv4 gateway for LAN discovery
+                            parsed_ip = ipaddress.ip_address(gw)
+                            if parsed_ip.version == 4:
                                 logger.debug(f"Detected gateway (ipconfig): {gw}")
                                 return gw
-                            except ValueError:
-                                pass
+                        except ValueError:
+                            pass
         else:
             result = subprocess.run(
                 ["ip", "route", "show", "default"],
@@ -216,17 +228,30 @@ def _detect_dns_servers() -> List[str]:
                 ["ipconfig", "/all"],
                 capture_output=True, text=True, timeout=5
             )
-            for line in result.stdout.splitlines():
+            lines = result.stdout.splitlines()
+            in_dns_section = False
+            for line in lines:
                 if "DNS Servers" in line or ("DNS" in line and "Server" in line):
+                    in_dns_section = True
                     parts = line.split(":")
-                    if len(parts) >= 2:
-                        addr = parts[-1].strip()
-                        try:
-                            ipaddress.ip_address(addr)
-                            if addr not in dns_list:
-                                dns_list.append(addr)
-                        except ValueError:
-                            pass
+                    addr = parts[-1].strip() if len(parts) > 1 else ""
+                elif in_dns_section and line.startswith(" ") and ":" not in line and line.strip():
+                    # Continuation line for DNS
+                    addr = line.strip()
+                elif in_dns_section and not line.startswith(" ") and line.strip():
+                    in_dns_section = False
+                    addr = ""
+                else:
+                    addr = ""
+
+                if addr:
+                    try:
+                        # Only grab IPv4 DNS
+                        parsed_ip = ipaddress.ip_address(addr)
+                        if parsed_ip.version == 4 and addr not in dns_list:
+                            dns_list.append(addr)
+                    except ValueError:
+                        pass
         else:
             with open("/etc/resolv.conf", "r") as f:
                 for line in f:
