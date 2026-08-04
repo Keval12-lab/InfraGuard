@@ -106,7 +106,7 @@ export default function TopologyPage() {
         ram: "N/A",
         latency: "1 ms",
         uptime: "365 Days",
-        defaultX: 500,
+        defaultX: 600,
         defaultY: 50,
       },
     ];
@@ -126,8 +126,10 @@ export default function TopologyPage() {
     );
 
     // Position Routers (Level 1)
+    const center = 600;
     routers.forEach((r, idx) => {
-      const step = 1000 / (routers.length + 1);
+      const totalWidth = (routers.length - 1) * 160;
+      const startX = center - (totalWidth / 2);
       initialNodes.push({
         ...r,
         level: 1,
@@ -135,13 +137,16 @@ export default function TopologyPage() {
         ram: "34%",
         latency: "2 ms",
         uptime: "45 Days",
-        defaultX: (idx + 1) * step,
-        defaultY: 140,
+        defaultX: startX + idx * 160,
+        defaultY: 150,
       });
     });
 
     // Core Switches (Level 2)
     const switchCount = switches.length > 0 ? switches.length : 1;
+    const totalSwitchWidth = (switchCount - 1) * 160;
+    const switchStartX = center - (totalSwitchWidth / 2);
+
     if (switches.length === 0 && endpoints.length > 0) {
       initialNodes.push({
         id: "virtual_switch",
@@ -155,12 +160,11 @@ export default function TopologyPage() {
         ram: "45%",
         latency: "1 ms",
         uptime: "12 Days",
-        defaultX: 500,
-        defaultY: 250,
+        defaultX: center,
+        defaultY: 260,
       });
     } else {
       switches.forEach((sw, idx) => {
-        const step = 1000 / (switchCount + 1);
         initialNodes.push({
           ...sw,
           level: 2,
@@ -168,8 +172,8 @@ export default function TopologyPage() {
           ram: "50%",
           latency: "2 ms",
           uptime: "90 Days",
-          defaultX: (idx + 1) * step,
-          defaultY: 250,
+          defaultX: switchStartX + idx * 160,
+          defaultY: 260,
         });
       });
     }
@@ -180,7 +184,8 @@ export default function TopologyPage() {
       const row = Math.floor(idx / maxPerRow);
       const col = idx % maxPerRow;
       const countInRow = Math.min(endpoints.length - row * maxPerRow, maxPerRow);
-      const step = 1000 / (countInRow + 1);
+      const totalEpWidth = (countInRow - 1) * 140;
+      const epStartX = center - (totalEpWidth / 2);
       
       initialNodes.push({
         ...ep,
@@ -189,8 +194,8 @@ export default function TopologyPage() {
         ram: ep.status === "Offline" ? "0%" : "28%",
         latency: ep.status === "Offline" ? "Timed Out" : "4 ms",
         uptime: ep.status === "Offline" ? "0 Days" : "15 Days",
-        defaultX: (col + 1) * step,
-        defaultY: 370 + row * 110,
+        defaultX: epStartX + col * 140,
+        defaultY: 380 + row * 110,
       });
     });
 
@@ -505,9 +510,9 @@ export default function TopologyPage() {
         </Stack>
       </Stack>
 
-      <Grid container spacing={3}>
+      <Stack direction={{ xs: "column", md: "row" }} spacing={3}>
         {/* Left Summary and Directory Panel */}
-        <Grid item xs={12} md={3}>
+        <Box sx={{ width: { xs: "100%", md: 280 }, flexShrink: 0 }}>
           <Paper
             variant="outlined"
             sx={{
@@ -695,10 +700,10 @@ export default function TopologyPage() {
               </List>
             </Box>
           </Paper>
-        </Grid>
+        </Box>
 
         {/* Graph Canvas Column */}
-        <Grid item xs={12} md={9}>
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Paper
             variant="outlined"
             sx={{
@@ -809,7 +814,7 @@ export default function TopologyPage() {
                 ref={svgRef}
                 width="100%"
                 height="560"
-                viewBox="0 0 1000 560"
+                viewBox="0 0 1200 650"
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
@@ -1041,8 +1046,8 @@ export default function TopologyPage() {
               </Stack>
             </Stack>
           </Paper>
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
 
       {/* Slide-out Node Inspector Drawer */}
       <Drawer
