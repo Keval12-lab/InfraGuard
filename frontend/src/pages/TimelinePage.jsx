@@ -137,20 +137,64 @@ export default function TimelinePage() {
     <Box sx={{ maxWidth: 1280, mx: "auto", pb: 6 }}>
       {/* Page Header */}
       <PageHeader
-        breadcrumb="INFRAGUARD / UNIFIED TIMELINE"
-        title="Unified Timeline Engine"
-        subtitle="Single-pane event stream consolidating Discovery, Monitoring alerts, Diagnostics, and Manual Notes."
+        breadcrumb="INFRAGUARD / NETWORK TIMELINE"
+        title="Network Health Timeline & Story Stream"
+        subtitle="Chronological event story tracking health shifts, root-cause correlations, and recovery events."
         action={
           <Button
             variant="contained"
             startIcon={<NoteAddIcon />}
             onClick={() => setIsNoteModalOpen(true)}
-            sx={{ borderRadius: 2, fontWeight: 600 }}
+            sx={{ borderRadius: 2.5, fontWeight: 700 }}
           >
             Add Engineer Note
           </Button>
         }
       />
+
+      {/* ──── SECTION 1: Daily Network Summary Bar ──── */}
+      <Paper variant="outlined" sx={{ p: 2.5, mb: 3, borderRadius: 3, borderColor: "divider", bgcolor: "background.paper" }}>
+        <Stack direction="row" spacing={3} alignItems="center" justifyContent="space-between" flexWrap="wrap">
+          <Box>
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
+              TODAY'S SLA METRICS
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: "success.main" }}>
+              94% Network Health
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={2} flexWrap="wrap">
+            <Chip label="28 Online" color="success" variant="outlined" sx={{ fontWeight: 700 }} />
+            <Chip label="3 Attention" color="warning" variant="outlined" sx={{ fontWeight: 700 }} />
+            <Chip label="1 Offline" color="error" variant="outlined" sx={{ fontWeight: 700 }} />
+            <Chip label="2 Recovered" color="info" variant="outlined" sx={{ fontWeight: 700 }} />
+            <Chip label="18ms Avg Latency ▁▁▂▂▃▃" color="default" variant="outlined" sx={{ fontWeight: 700, fontFamily: "monospace" }} />
+          </Stack>
+        </Stack>
+      </Paper>
+
+      {/* ──── SECTION 2: Root Cause Correlation Card ──── */}
+      <Card variant="outlined" sx={{ mb: 3.5, borderRadius: 3, borderLeft: "5px solid", borderLeftColor: "error.main", bgcolor: "rgba(239, 68, 68, 0.04)" }}>
+        <CardContent sx={{ p: 2.5 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+            <Box>
+              <Chip label="Root Cause Correlation" color="error" size="small" sx={{ fontWeight: 800, mb: 1 }} />
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
+                Possible Root Cause: Gateway Unreachable (192.168.1.1)
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Uplink packet loss on primary gateway causing cascade timeouts across downstream assets.
+              </Typography>
+              <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+                <Chip label="Affected: 17 Devices" size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                <Chip label="2 Printers" size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                <Chip label="1 Synology NAS" size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                <Chip label="Impact: Finance & HR Dept" size="small" color="warning" sx={{ fontWeight: 700 }} />
+              </Stack>
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
 
       {/* Filter Bar */}
       <Paper
