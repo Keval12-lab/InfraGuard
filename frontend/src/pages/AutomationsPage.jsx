@@ -31,10 +31,11 @@ import {
 } from "../hooks/useAutomations";
 
 export default function AutomationsPage() {
-  const { data: automationsList, isLoading: isTemplatesLoading } = useAutomations();
-  const { data: runsList, isLoading: isHistoryLoading } = useAutomationRuns();
+  const { data: automationsList } = useAutomations();
+  const { data: runsList } = useAutomationRuns();
   const { mutateAsync: triggerRun, isPending: isStarting } = useRunAutomation();
 
+  const [activeTab, setActiveTab] = useState("ALL");
   const [expandedRunId, setExpandedRunId] = useState(null);
 
   const handleTrigger = async (autoId) => {
@@ -45,20 +46,48 @@ export default function AutomationsPage() {
     }
   };
 
-  const toggleExpand = (runId) => {
-    setExpandedRunId(expandedRunId === runId ? null : runId);
-  };
-
   const automations = automationsList || [];
   const runs = runsList || [];
 
   return (
     <Box sx={{ maxWidth: 1280, mx: "auto", pb: 6 }}>
       <PageHeader
-        breadcrumb="INFRAGUARD / AUTOMATION ENGINE"
-        title="Infrastructure Automation"
-        subtitle="Schedule or manually run multi-step diagnostics, sweeps, and configuration check sequences."
+        breadcrumb="INFRAGUARD / NOTIFICATION CENTER"
+        title="Live Incident Stream & Alert Center"
+        subtitle="Every notification provides instant context: What happened, which device, possible reasons, and step-by-step resolution steps."
       />
+
+      {/* ──── Notification Filter Tabs ──── */}
+      <Stack direction="row" spacing={1.5} sx={{ mb: 3, flexWrap: "wrap", gap: 1 }}>
+        <Chip
+          label="All Incidents (20)"
+          clickable
+          color={activeTab === "ALL" ? "primary" : "default"}
+          onClick={() => setActiveTab("ALL")}
+          sx={{ fontWeight: 700, borderRadius: 2 }}
+        />
+        <Chip
+          label="Critical (3)"
+          clickable
+          color={activeTab === "CRITICAL" ? "error" : "default"}
+          onClick={() => setActiveTab("CRITICAL")}
+          sx={{ fontWeight: 700, borderRadius: 2 }}
+        />
+        <Chip
+          label="Warnings (5)"
+          clickable
+          color={activeTab === "WARNING" ? "warning" : "default"}
+          onClick={() => setActiveTab("WARNING")}
+          sx={{ fontWeight: 700, borderRadius: 2 }}
+        />
+        <Chip
+          label="Resolved (12)"
+          clickable
+          color={activeTab === "RESOLVED" ? "success" : "default"}
+          onClick={() => setActiveTab("RESOLVED")}
+          sx={{ fontWeight: 700, borderRadius: 2 }}
+        />
+      </Stack>
 
       <Grid container spacing={3}>
         {/* Left Side: Automation Templates */}
