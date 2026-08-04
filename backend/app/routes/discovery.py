@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, request
 from ..services.discovery_service import (
     detect_local_subnet,
     execute_subnet_discovery,
+    get_demo_discovery_results,
     validate_cidr,
     measure_network_quality,
 )
@@ -11,6 +12,22 @@ from ..database.db import save_discovery_results, get_discovery_history
 
 logger = logging.getLogger("infraguard.routes.discovery")
 discovery_bp = Blueprint("discovery", __name__, url_prefix="/api/v1/discovery")
+
+
+@discovery_bp.route("/demo", methods=["GET", "POST", "OPTIONS"])
+def get_demo_scan():
+    """
+    Returns simulated Demo Mode discovery results for presentation/interviews.
+    """
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+
+    demo_data = get_demo_discovery_results()
+    logger.info("Demo Mode discovery scan data served successfully.")
+    return jsonify({
+        "status": "success",
+        "data": demo_data
+    })
 
 
 @discovery_bp.route("/detect-subnet", methods=["GET", "OPTIONS"])

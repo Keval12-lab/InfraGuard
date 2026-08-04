@@ -892,3 +892,175 @@ def execute_subnet_discovery(
         logger.error(f"Failed to sync discovery results to asset DB: {db_err}")
 
     return final_results
+
+
+def get_demo_discovery_results() -> Dict[str, Any]:
+    """
+    Returns realistic, clearly labeled Demo Mode discovery results for presentation/interviews.
+    Labeled explicitly with is_demo: True and 'DEMO DATA - SIMULATED ENVIRONMENT' banner.
+    """
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    demo_devices = [
+        {
+            "ip_address": "192.168.29.1",
+            "hostname": "Jio-Fiber-Gateway",
+            "mac_address": "A4:91:B1:C2:D3:E4",
+            "vendor": "Jio Infocomm",
+            "device_type": "Router",
+            "reachable": True,
+            "latency": 1.45,
+            "confidence_score": 100,
+            "confidence_label": "100% Fully Verified",
+            "verification_reasons": [
+                "✔ Device responded to network probe",
+                "✔ Physical MAC Address verified",
+                "✔ Brand identified (Jio Infocomm)",
+                "✔ System details collected via SNMP"
+            ],
+            "troubleshooting": {
+                "status_summary": "Device is online and responding normally.",
+                "possible_reasons": [],
+                "what_you_can_try": ["No action required. Main router connection is healthy."]
+            }
+        },
+        {
+            "ip_address": "192.168.29.105",
+            "hostname": "Engineering-Laptop",
+            "mac_address": "84:7B:EB:99:88:77",
+            "vendor": "Dell Technologies",
+            "device_type": "Laptop",
+            "reachable": True,
+            "latency": 4.12,
+            "confidence_score": 80,
+            "confidence_label": "80% Verified by Ping & MAC",
+            "verification_reasons": [
+                "✔ Device responded to network probe",
+                "✔ Physical MAC Address verified",
+                "✔ Brand identified (Dell Technologies)"
+            ],
+            "troubleshooting": {
+                "status_summary": "Device is online and responding normally.",
+                "possible_reasons": [],
+                "what_you_can_try": ["No action required. Connection is healthy."]
+            }
+        },
+        {
+            "ip_address": "192.168.29.140",
+            "hostname": "HP-OfficeJet-Pro",
+            "mac_address": "00:1E:0B:44:55:66",
+            "vendor": "HP Inc.",
+            "device_type": "Printer",
+            "reachable": True,
+            "latency": 8.35,
+            "confidence_score": 80,
+            "confidence_label": "80% Verified by Ping & MAC",
+            "verification_reasons": [
+                "✔ Device responded to network probe",
+                "✔ Physical MAC Address verified",
+                "✔ Brand identified (HP Inc.)"
+            ],
+            "troubleshooting": {
+                "status_summary": "Device is online and responding normally.",
+                "possible_reasons": [],
+                "what_you_can_try": ["No action required. Connection is healthy."]
+            }
+        },
+        {
+            "ip_address": "192.168.29.182",
+            "hostname": "Support-iPhone",
+            "mac_address": "DC:A9:04:11:22:33",
+            "vendor": "Apple Inc.",
+            "device_type": "Mobile",
+            "reachable": True,
+            "latency": 12.60,
+            "confidence_score": 80,
+            "confidence_label": "80% Verified by Ping & MAC",
+            "verification_reasons": [
+                "✔ Device responded to network probe",
+                "✔ Physical MAC Address verified",
+                "✔ Brand identified (Apple Inc.)"
+            ],
+            "troubleshooting": {
+                "status_summary": "Device is online and responding normally.",
+                "possible_reasons": [],
+                "what_you_can_try": ["No action required. Connection is healthy."]
+            }
+        },
+        {
+            "ip_address": "192.168.29.200",
+            "hostname": "Backup-NAS-01",
+            "mac_address": "00:11:32:77:88:99",
+            "vendor": "Synology Inc.",
+            "device_type": "Storage (NAS)",
+            "reachable": True,
+            "latency": 2.10,
+            "confidence_score": 100,
+            "confidence_label": "100% Fully Verified",
+            "verification_reasons": [
+                "✔ Device responded to network probe",
+                "✔ Physical MAC Address verified",
+                "✔ Brand identified (Synology Inc.)",
+                "✔ System details collected via SNMP"
+            ],
+            "troubleshooting": {
+                "status_summary": "Device is online and responding normally.",
+                "possible_reasons": [],
+                "what_you_can_try": ["No action required. Connection is healthy."]
+            }
+        },
+        {
+            "ip_address": "192.168.29.220",
+            "hostname": "Lobby-IP-Camera",
+            "mac_address": "BC:AD:28:33:44:55",
+            "vendor": "Hikvision",
+            "device_type": "IP Camera",
+            "reachable": False,
+            "latency": None,
+            "confidence_score": 0,
+            "confidence_label": "0% Unverified / Offline",
+            "verification_reasons": [
+                "✖ Device did not respond to network probe",
+                "✖ Physical MAC Address cached from previous scan"
+            ],
+            "troubleshooting": {
+                "status_summary": "Device is not responding on the network.",
+                "possible_reasons": [
+                    "Camera power supply unplugged or PoE port disabled",
+                    "Ethernet cable damaged or disconnected",
+                    "Camera IP address changed"
+                ],
+                "what_you_can_try": [
+                    "1. Verify camera power supply / PoE switch port status",
+                    "2. Check physical Ethernet cable connection",
+                    "3. Run a fresh network scan"
+                ]
+            }
+        }
+    ]
+
+    return {
+        "is_demo": True,
+        "demo_banner": "DEMO DATA - SIMULATED ENVIRONMENT (Never Mixed With Live Scan)",
+        "subnet": "192.168.29.0/24 (Simulated)",
+        "total_scanned": 254,
+        "active_found": 5,
+        "unreachable_count": 1,
+        "duration_seconds": 0.45,
+        "scanned_at": now_iso,
+        "network_health": {
+            "score": 85,
+            "label": "Good",
+            "summary": "5 of 6 devices operational. 1 offline camera detected."
+        },
+        "devices": demo_devices,
+        "diagnostics": {
+            "icmp": "PASS",
+            "arp": "PASS",
+            "mac_lookup": "PASS",
+            "snmp": "PASS",
+            "asset_sync": "PASS",
+            "stats": {"discovered": 6, "snmp_success": 2, "snmp_failed": 0}
+        }
+    }
+

@@ -265,7 +265,30 @@ export default function DiscoveryPage() {
                 </Box>
 
                 {/* Step 3: Run Discovery Trigger */}
-                <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                <Box sx={{ mt: 3, display: "flex", gap: 2, justifyContent: "flex-end", flexWrap: "wrap" }}>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="large"
+                    onClick={async () => {
+                      try {
+                        setErrorMessage(null);
+                        const res = await fetch("/api/v1/discovery/demo");
+                        const json = await res.json();
+                        if (json.status === "success") {
+                          setScanResult(json.data);
+                        } else {
+                          setErrorMessage("Failed to load demo dataset.");
+                        }
+                      } catch (err) {
+                        setErrorMessage("Error fetching demo data.");
+                      }
+                    }}
+                    sx={{ borderRadius: 2.5, px: 3, py: 1.2, fontWeight: 600 }}
+                  >
+                    Load Demo Data (Interview Mode)
+                  </Button>
+
                   <Button
                     type="submit"
                     variant="contained"
@@ -321,8 +344,15 @@ export default function DiscoveryPage() {
       {scanResult && (
         <IGSection
           title="Step 4: Discovery Summary"
-          action={<StatusChip status="COMPLETED" label="Discovery Completed" />}
+          action={<StatusChip status="COMPLETED" label={scanResult.is_demo ? "Demo Mode Active" : "Discovery Completed"} />}
         >
+          {scanResult.is_demo && (
+            <Alert severity="info" sx={{ mb: 2.5, borderRadius: 2.5 }}>
+              <AlertTitle sx={{ fontWeight: 700 }}>DEMO DATA - SIMULATED ENVIRONMENT</AlertTitle>
+              This dataset is provided for live demonstration & interview purposes. Demo mode strictly adheres to our "Never Guess" philosophy and is never mixed with live network scans.
+            </Alert>
+          )}
+
           <Grid container spacing={2.5}>
             <Grid item xs={12} sm={6} md={3}>
               <MetricCard
