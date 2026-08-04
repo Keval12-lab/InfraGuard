@@ -1,7 +1,7 @@
-# InfraGuard v2.0 Enterprise Design System Specification
+# InfraGuard v2.0 Enterprise Design System & UX Architecture
 
-> **Core Philosophy:** *Zero Backend Rewrite. 100% Presentation & UX Elevate.*  
-> InfraGuard v2.0 preserves all existing Flask backend logic, SNMP telemetry, discovery engine algorithms, and API hooks while completely transforming the visual interface into an enterprise-grade, high-perceived-value dark design system.
+> **Core Philosophy:** *Experience First. Zero Backend Rewrite. 100% Presentation & UX Elevate.*  
+> InfraGuard v2.0 preserves all Flask backend logic, SNMP telemetry, and discovery engines while establishing a world-class dark mode UX architecture designed for 3-5 year scalability.
 
 ---
 
@@ -22,72 +22,70 @@
 
 ---
 
-## 📐 2. Typography, Spacing & Border Radii Rules
+## 📐 2. Typography, Radii & Motion Scale
 
 ### Border Radii Standards
 - **Cards & Widgets:** `16px` (`borderRadius: 4`)
 - **Buttons & Chips:** `12px` (`borderRadius: 3`)
-- **Input Fields & Search:** `10px` (`borderRadius: 2.5`)
+- **Inputs & Search:** `10px` (`borderRadius: 2.5`)
 
-### Elevation & Shadows
-- **Card Depth:** `0 8px 32px rgba(0, 0, 0, 0.15)`
-- **Subtle Glow:** Subtle 1px borders (`#22262D`) without harsh harsh drop-shadows.
-
-### Spacing Scale
-Strictly enforce standardized padding/margins: `8px`, `16px`, `24px`, `32px`, `48px`, `64px`.
+### Standardized Motion Timings (Framer Motion)
+- **Card Hover:** `120ms` (ease-out)
+- **Sidebar Collapse/Expand:** `180ms` (ease-in-out)
+- **Drawer Slide-In:** `220ms` (cubic-bezier)
+- **Modal Dialog Fade:** `250ms` (ease-out)
 
 ---
 
-## 🧩 3. Component Architecture & System Layer
+## 🖼️ 3. Iconography & SVG Asset Library
+
+### Icon Standard Rules
+Strictly limit icon sets to **Lucide Icons** + **Material Symbols Rounded**. No random third-party SVGs inside application dashboards.
+
+### Vector Infrastructure Assets (`frontend/src/assets/svg/`)
+- `router.svg`, `switch.svg`, `server.svg`, `printer.svg`, `camera.svg`, `nas.svg`, `wifi.svg`, `firewall.svg`, `internet.svg`, `cloud.svg`, `rack.svg`
+
+---
+
+## ♿ 4. Accessibility (a11y) & Responsiveness
+
+### Keyboard Navigation Standards
+- `Tab` / `Shift+Tab`: Full focus traversal across interactive controls.
+- `ESC`: Close `DeviceDrawer`, modals, or active dropdown menus.
+- `Enter` / `Space`: Trigger active button actions.
+- **Focus Indicator:** Visible 2px focus ring (`outline: 2px solid #2563EB`).
+
+### Screen Resolution Support
+Layout scale testing guaranteed across: `1366px`, `1440px`, `1600px`, `1920px`, `2560px` (UltraWide).
+
+---
+
+## 🔔 5. Standardized Application UX States
+
+| State Type | Component Spec | User Experience Action |
+| :--- | :--- | :--- |
+| **Empty State** | `IGEmptyState.jsx` | Illustrative graphic + *"No Devices Discovered"* + Primary *"Start Scan"* CTA |
+| **Error State** | `IGErrorState.jsx` | *"Cannot reach InfraGuard Engine"* + Retry Button + View Logs Link |
+| **Skeleton Pulse**| `IGSkeleton.jsx` | Shimmer pulse layout matching card structure (Zero "Loading..." text) |
+| **Toast System** | `IGToast.jsx` | Strictly 4 variants: `Success`, `Info`, `Warning`, `Critical` |
+
+---
+
+## 🚀 6. 10-Phase Enterprise Product Roadmap
 
 ```text
-frontend/src/
-├── theme/
-│   ├── palette.js           # #09090B Dark Palette
-│   ├── typography.js        # Inter / Geist Font Rules
-│   └── components.js        # MUI Overrides (Cards, Chips, Buttons)
-├── components/ui/
-│   ├── IGCard.jsx           # 16px Radius Container Card
-│   ├── IGMetricCard.jsx     # Mini Sparkline Indicator Card
-│   ├── IGStatusChip.jsx     # Glowing Status Pills (Healthy / Needs Attention / Offline)
-│   ├── IGSkeleton.jsx       # Shimmer Loading Skeleton Pulse
-│   └── IGPageHeader.jsx     # Standardized Page Titles & Search Bar
+Phase 1: Enterprise Design System & Tokens       [██████████ 100%]
+Phase 2: Dark Dashboard & Executive UX           [██████████  90%]
+Phase 3: Devices Table & Drawer Overhaul          [██████████  85%]
+Phase 4: Network Map Topology Visualizer          [██████████  80%]
+Phase 5: Background Monitoring & Probes           [██████████  50%]
+Phase 6: Executive & Technical PDF Reports        [██████████  75%]
+Phase 7: Landing & Marketing Website             [██████████  20%]
+Phase 8: Real Hardware Vendor Validation          [██████████  50%]
+Phase 9: 3-Client SMB Pilot Program              [██████████  10%]
+Phase 10: Commercial Release & Deployment         [██████████   0%]
 ```
 
 ---
 
-## 🗓️ 9-Stage Design System Migration Schedule
-
-| Stage | Focus Area | Timeline | Deliverables / Output |
-| :---: | :--- | :---: | :--- |
-| **Stage 1** | **Design Tokens & Theme** | 2 Days | `#09090B` theme palette, MUI theme overrides, font system |
-| **Stage 2** | **Core Component Library** | 5 Days | `IGCard`, `IGMetricCard`, `IGStatusChip`, `IGSkeleton`, `IGDrawer` |
-| **Stage 3** | **Dashboard Redesign** | 4 Days | Dark executive dashboard (Network Map, Health Donut, Recent Activity) |
-| **Stage 4** | **Discovery & Devices Page**| 3 Days | Enterprise discovery table, 6-tab Device Drawer overhaul |
-| **Stage 5** | **Network Map (Topology)** | 2 Days | Hierarchical topology canvas with SVG device node icons |
-| **Stage 6** | **Live Monitoring Page** | 3 Days | Real-time latency sparklines & resource metric gauges |
-| **Stage 7** | **Reports & Audit Exports** | 2 Days | Executive Manager PDF & Technical Engineer Audit UI |
-| **Stage 8** | **Framer Micro-Animations**| 3 Days | Smooth drawer slides, card hover interactions, shimmer loaders |
-| **Stage 9** | **Consistency Polish** | 4 Days | 1366px screen audit, zero console warnings, dark mode sanity check |
-
----
-
-## 🔄 100% Backend & Hook Reuse Guarantee
-
-```text
-InfraGuard Backend (100% Intact)
-├── Flask REST API Engine       ✅ 0% Rewrite
-├── ICMP/ARP Discovery Scanner  ✅ 0% Rewrite
-├── SNMP MIB Telemetry Inspector ✅ 0% Rewrite
-├── Device Confidence Engine    ✅ 0% Rewrite
-└── ReportLab PDF Generator     ✅ 0% Rewrite
-
-Frontend State & Logic (95% Intact)
-├── Axios API Client            ✅ 0% Rewrite
-├── Device Filter & Search Hooks ✅ 0% Rewrite
-└── Redux / Zustand State       ✅ 0% Rewrite
-```
-
----
-
-*Document Created: 2026-08-04 | Approved by Design System Lead & Product Owner*
+*Document Updated: 2026-08-04 | Approved by Product Owner & Engineering Director*
