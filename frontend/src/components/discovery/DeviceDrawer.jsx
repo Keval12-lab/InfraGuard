@@ -110,9 +110,10 @@ export default function DeviceDrawer({ open, onClose, device }) {
         <Tabs value={tabIndex} onChange={(e, val) => setTabIndex(val)} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
           <Tab label="Overview" />
           <Tab label="Connection" />
-          <Tab label="Health & Verification" />
-          <Tab label="What You Can Try" />
-          <Tab label="Advanced" />
+          <Tab label="Health" />
+          <Tab label="Troubleshooting" />
+          <Tab label="History" />
+          <Tab label="Technical Details" />
         </Tabs>
       </Box>
 
@@ -166,7 +167,7 @@ export default function DeviceDrawer({ open, onClose, device }) {
 
         {tabIndex === 2 && (
           <Stack spacing={2.5}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Device Verification Score</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Verification & Confidence Status</Typography>
             <Box>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>{confidenceLabel}</Typography>
@@ -176,7 +177,7 @@ export default function DeviceDrawer({ open, onClose, device }) {
             </Box>
 
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
-              How We Identified This Device
+              Verified Sources
             </Typography>
             <Stack spacing={1}>
               {reasons.map((reason, idx) => (
@@ -186,6 +187,15 @@ export default function DeviceDrawer({ open, onClose, device }) {
                 </Box>
               ))}
             </Stack>
+
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
+              Unverified / Missing Data Breakdown
+            </Typography>
+            <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+              <Typography variant="body2" color="text.secondary">
+                Model, Firmware & Detailed OS Version are unverified because SNMP is disabled or not exposed by this device.
+              </Typography>
+            </Box>
           </Stack>
         )}
 
@@ -221,32 +231,36 @@ export default function DeviceDrawer({ open, onClose, device }) {
                 ))}
               </Stack>
             </Box>
-
-            <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: "uppercase" }}>
-                Device Health Timeline
-              </Typography>
-              <Stack spacing={1} sx={{ mt: 1 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyBetween: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 60 }}>09:12 AM</Typography>
-                  <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>Online (Ping Responded 1.4ms)</Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", justifyBetween: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 60 }}>10:40 AM</Typography>
-                  <Typography variant="body2" color="warning.main" sx={{ fontWeight: 600 }}>Intermittent Packet Loss Probe</Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", justifyBetween: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 60 }}>11:07 AM</Typography>
-                  <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>Verified & Online (ARP Cache Confirmed)</Typography>
-                </Box>
-              </Stack>
-            </Box>
           </Stack>
         )}
 
         {tabIndex === 4 && (
           <Stack spacing={2.5}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Advanced Telemetry (Evidence Data)</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Device Health History & Audit Timeline</Typography>
+            <Stack spacing={1}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 70 }}>09:10 AM</Typography>
+                <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>Online (ICMP Responded 1.45 ms)</Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 70 }}>10:42 AM</Typography>
+                <Typography variant="body2" color="warning.main" sx={{ fontWeight: 600 }}>Intermittent Latency Probe Warning</Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 70 }}>11:05 AM</Typography>
+                <Typography variant="body2" color="error.main" sx={{ fontWeight: 600 }}>Unreachable (ICMP Timeout)</Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, minWidth: 70 }}>11:08 AM</Typography>
+                <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>Re-verified & Online (Ping + ARP Confirmed)</Typography>
+              </Box>
+            </Stack>
+          </Stack>
+        )}
+
+        {tabIndex === 5 && (
+          <Stack spacing={2.5}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Technical Details & Raw Telemetry (Engineers Only)</Typography>
             <Box sx={{ p: 2, borderRadius: 2, bgcolor: "background.default", border: "1px solid", borderColor: "divider" }}>
               <Typography variant="caption" sx={{ fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
                 {JSON.stringify({

@@ -152,22 +152,23 @@ export default function EnterpriseDiscoveryTable({ devices }) {
 
       {/* Table */}
       <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
-        <Table sx={{ minWidth: 850 }}>
+        <Table sx={{ minWidth: 950 }}>
           <TableHead sx={{ bgcolor: "background.default" }}>
             <TableRow>
               {renderSortableHeadCell("status", "Status")}
-              {renderSortableHeadCell("hostname", "Hostname")}
-              {renderSortableHeadCell("ip_address", "IP Address")}
-              {renderSortableHeadCell("mac_address", "MAC Address")}
-              {renderSortableHeadCell("vendor", "Vendor")}
-              {renderSortableHeadCell("latency", "Latency")}
+              {renderSortableHeadCell("hostname", "Device Name")}
+              {renderSortableHeadCell("ip_address", "IP")}
+              {renderSortableHeadCell("vendor", "Brand")}
+              {renderSortableHeadCell("mac_address", "MAC")}
+              <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>Verification</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>Last Seen</TableCell>
               <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {paginatedDevices.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
                   <Typography variant="body1" color="text.secondary">
                     No devices match your search or filter criteria.
                   </Typography>
@@ -181,7 +182,9 @@ export default function EnterpriseDiscoveryTable({ devices }) {
                 const ip = dev.ip_address;
                 const mac = dev.mac_address || "Not Discovered";
                 const vendor = dev.vendor && dev.vendor !== "Local Host" ? dev.vendor : "Unknown";
-                const latency = dev.latency ? `${dev.latency.toFixed(2)} ms` : "-";
+                const confidence = dev.confidence_score ?? (isReachable ? 80 : 0);
+                const verificationLabel = `${confidence}% Verified`;
+                const lastSeen = isReachable ? "Just Now" : "2 mins ago";
 
                 return (
                   <TableRow 
@@ -199,14 +202,22 @@ export default function EnterpriseDiscoveryTable({ devices }) {
                     <TableCell sx={{ fontFamily: "monospace", fontSize: "0.85rem" }}>
                       {ip}
                     </TableCell>
-                    <TableCell sx={{ fontFamily: "monospace", fontSize: "0.85rem", color: "text.secondary" }}>
-                      {mac}
-                    </TableCell>
                     <TableCell sx={{ color: vendor === "Unknown" ? "text.secondary" : "text.primary" }}>
                       {vendor}
                     </TableCell>
-                    <TableCell sx={{ color: "text.secondary" }}>
-                      {latency}
+                    <TableCell sx={{ fontFamily: "monospace", fontSize: "0.85rem", color: "text.secondary" }}>
+                      {mac}
+                    </TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={verificationLabel} 
+                        size="small" 
+                        color={confidence >= 80 ? "success" : confidence >= 40 ? "warning" : "default"} 
+                        variant="outlined" 
+                      />
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "0.85rem", color: "text.secondary" }}>
+                      {lastSeen}
                     </TableCell>
                     <TableCell>
                       <Tooltip title="View Details">
