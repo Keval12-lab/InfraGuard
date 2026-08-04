@@ -58,6 +58,22 @@ To build 100% trust with SMB owners and security researchers, **InfraGuard Beaco
 
 ---
 
+## 📌 Project Status & Phase Roadmap
+
+| Phase | Description / Component | Status |
+| :--- | :--- | :---: |
+| **Product Vision** | SMB IT Troubleshooting Assistant Identity & Philosophy | ✅ Complete |
+| **Core Backend Architecture** | 4-Layer Backend Pipeline (Collectors → Confidence → Recommendation → API) | ✅ Complete |
+| **Discovery Engine** | Multi-threaded ICMP, ARP, SNMP, and LLDP Discovery | ✅ Complete |
+| **Evidence & Confidence** | Confidence Engine (0-100%) & Verification Reason Lists | ✅ Complete |
+| **UI Design System** | Material-UI Dashboard, Summary Cards & Tabbed Device Drawer | ✅ Complete |
+| **Practice Network** | Practice Network Interview Dataset (`/api/v1/discovery/demo`) | ✅ Complete |
+| **Real World Validation** | Multi-environment router & hardware field validation | 🚧 In Progress |
+| **InfraGuard Beacon (v2.0)** | Open-Source Lightweight Local Collector & Cloud Sync | 📋 Planned |
+| **Mobile Management App (v3.0)**| Cross-platform iOS/Android Notification & Action Center | 📋 Planned |
+
+---
+
 ## 🎯 Core Philosophy & Principles
 
 1. **Evidence Over Assumptions:** Never show data that cannot be verified. We never fabricate topology switches or guess offline statuses. Every node is backed by ICMP/ARP/SNMP evidence.

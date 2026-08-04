@@ -286,7 +286,7 @@ export default function DiscoveryPage() {
                     }}
                     sx={{ borderRadius: 2.5, px: 3, py: 1.2, fontWeight: 600 }}
                   >
-                    Load Practice Mode (Interview Dataset)
+                    Practice Network (Interview Dataset)
                   </Button>
 
                   <Button
