@@ -55,6 +55,8 @@ def create_app() -> Flask:
     app.register_blueprint(runbook_bp)
     app.register_blueprint(automation_bp)
     app.register_blueprint(snmp_bp)
+    from .routes.auth import auth_bp
+    app.register_blueprint(auth_bp)
 
     # Centralized Security and Generic Error Handlers
     from .utils.security import SecurityValidationError, log_security_event

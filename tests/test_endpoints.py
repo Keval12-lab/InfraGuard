@@ -36,6 +36,14 @@ def test_endpoints():
     assert "uptime_seconds" in data
     assert data["build"] == "production-ready-v1.0.0"
 
+    # 4. Test /api/v1/auth/login
+    response = client.post("/api/v1/auth/login", json={"email": "admin@infraguard.local", "password": "AdminPassword123!"})
+    assert response.status_code == 200
+    data = json.loads(response.data)
+    assert data["status"] == "success"
+    assert "token" in data
+    assert data["user"]["role"] == "Admin"
+
 if __name__ == "__main__":
     test_endpoints()
     print("All python API diagnostics tests PASSED successfully!")
