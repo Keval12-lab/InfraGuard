@@ -1,4 +1,5 @@
 import { createTheme } from "@mui/material/styles";
+import { TOKENS } from "./designTokens";
 
 export const appTheme = createTheme({
   palette: {
@@ -42,7 +43,16 @@ export const appTheme = createTheme({
       main: "#0284C7",
     },
   },
-  shape: { borderRadius: 12 },
+  shape: { borderRadius: TOKENS.RADIUS.md },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: TOKENS.BREAKPOINTS.mobile,
+      md: TOKENS.BREAKPOINTS.tablet,
+      lg: TOKENS.BREAKPOINTS.laptop,
+      xl: TOKENS.BREAKPOINTS.desktop,
+    },
+  },
   typography: {
     fontFamily:
       'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -78,8 +88,8 @@ export const appTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)",
+          borderRadius: TOKENS.RADIUS.md,
+          boxShadow: TOKENS.SHADOW.card,
           borderColor: "#E2E8F0",
         },
       },
