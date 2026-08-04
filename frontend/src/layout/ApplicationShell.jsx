@@ -27,7 +27,7 @@ import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 import { navigationItems } from "../config/navigation";
 
-const drawerWidth = 248;
+const drawerWidth = 260;
 
 function SidebarContent({ onNavigate, onOpenAbout }) {
   return (
@@ -213,9 +213,11 @@ export default function ApplicationShell() {
         </Drawer>
       </Box>
 
-      <Box component="main" className="main-content">
+      <Box component="main" className="main-content" sx={{ flexGrow: 1, height: "100vh", overflow: "auto", bgcolor: "#f8fafc" }}>
         <Toolbar />
-        <Outlet />
+        <Box sx={{ maxWidth: 1600, mx: "auto", p: 4 }}>
+          <Outlet />
+        </Box>
       </Box>
 
       {/* About Dialog */}

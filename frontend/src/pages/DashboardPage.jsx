@@ -158,9 +158,6 @@ export default function DashboardPage() {
         display: "flex",
         flexDirection: "column",
         gap: 3,
-        maxWidth: 1280,
-        mx: "auto",
-        pb: 6,
       }}
     >
       {/* ──── HERO: Infrastructure Health Hero Banner ──── */}
