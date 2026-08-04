@@ -281,6 +281,14 @@ backend\.venv\Scripts\python.exe tests/test_endpoints.py
 
 ---
 
+## 💼 Resume & Portfolio Positioning
+
+> **Developed InfraGuard, an evidence-based IT Operations & Troubleshooting Assistant for SMB environments using React 19, Material-UI, Flask, SQLite, and SNMP. Designed a multi-layered evidence engine that verifies devices using ICMP, ARP, SNMP, and LLDP, generates confidence scores (0-100%), and provides actionable troubleshooting recommendations instead of raw monitoring data.**
+
+---
+
+---
+
 ## 🌐 Production Deployment
 
 ### Backend Deployment (Render)
