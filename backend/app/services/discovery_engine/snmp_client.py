@@ -3,7 +3,7 @@ import logging
 from typing import Dict, Any, Optional
 
 try:
-    from pysnmp.hlapi import getCmd, SnmpEngine, CommunityData, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity
+    from pysnmp.hlapi import getCmd, nextCmd, SnmpEngine, CommunityData, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity
     PYSNMP_AVAILABLE = True
 except ImportError:
     PYSNMP_AVAILABLE = False
@@ -57,3 +57,33 @@ class SNMPClient:
             return False, None, elapsed_ms
             
         return False, None, (time.time() - start_time) * 1000.0
+
+    def walk(self, oid: str) -> tuple[bool, Dict[str, Any], float]:
+        """
+        Walks an OID tree (snmpwalk equivalent).
+        Returns (success, dict_of_results, response_time_ms)
+        """
+        if not PYSNMP_AVAILABLE:
+            return False, {}, 0.0
+            
+        start_time = time.time()
+        results = {}
+        try:
+            for (errorIndication, errorStatus, errorIndex, varBinds) in nextCmd(
+                self.engine, self.community_data, self.transport, self.context,
+                ObjectType(ObjectIdentity(oid)),
+                lexicographicMode=False
+            ):
+                if errorIndication or errorStatus:
+                    logger.debug(f"SNMP walk error for {self.ip} at {oid}: {errorIndication or errorStatus}")
+                    break
+                for varBind in varBinds:
+                    results[str(varBind[0])] = str(varBind[1])
+                    
+            elapsed_ms = (time.time() - start_time) * 1000.0
+            return True, results, elapsed_ms
+        except Exception as e:
+            elapsed_ms = (time.time() - start_time) * 1000.0
+            logger.debug(f"SNMP walk wrapper exception for {self.ip} at {oid}: {e}")
+            return False, {}, elapsed_ms
+

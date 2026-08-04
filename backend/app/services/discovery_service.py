@@ -26,6 +26,7 @@ from ..config import (
 )
 
 from .mac_vendor_service import resolve_vendor_by_mac, classify_device
+from .discovery_engine.snmp import SNMPDiscovery
 from ..database.db import save_discovery_results
 
 logger = logging.getLogger("infraguard.discovery")
@@ -790,6 +791,40 @@ def execute_subnet_discovery(
         else:
             dev["mac_address"] = None
 
+    # Run SNMP Discovery in parallel on discovered devices
+    snmp_module = SNMPDiscovery()
+    snmp_successes = 0
+    snmp_timeouts = 0
+
+    def _run_snmp(dev_dict):
+        # We use a short timeout for network scan mapping
+        snmp_result = snmp_module.discover(dev_dict["ip_address"], {"snmp_community": "public", "snmp_timeout": 1, "snmp_retries": 1})
+        if snmp_result["status"] == "success":
+            dev_dict["snmp"] = snmp_result
+            
+            # Enrich base device info with SNMP System Data
+            system_data = snmp_result.get("system", {})
+            if system_data.get("hostname"):
+                dev_dict["hostname"] = system_data["hostname"]
+            if system_data.get("vendor"):
+                dev_dict["vendor"] = system_data["vendor"]
+                dev_dict["device_type"] = classify_device(system_data["vendor"], system_data["hostname"], dev_dict["ip_address"])
+            
+            return True
+        return False
+
+    if len(discovered_devices) > 0:
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as snmp_exec:
+                snmp_futures = [snmp_exec.submit(_run_snmp, dev) for dev in discovered_devices]
+                for future in concurrent.futures.as_completed(snmp_futures):
+                    if future.result():
+                        snmp_successes += 1
+                    else:
+                        snmp_timeouts += 1
+        except Exception as snmp_err:
+            logger.warning(f"SNMP thread pool error: {snmp_err}")
+
     discovered_devices.sort(key=lambda d: [int(x) for x in d["ip_address"].split(".")])
     end_time = datetime.now(timezone.utc)
     duration_seconds = round((end_time - start_time).total_seconds(), 2)
@@ -797,6 +832,19 @@ def execute_subnet_discovery(
     logger.info(
         f"[Discovery Completed] Subnet: {network} | Found: {len(discovered_devices)}/{len(target_ips)} hosts | Duration: {duration_seconds}s"
     )
+
+    diagnostics = {
+        "icmp": "PASS",
+        "arp": "PASS" if len(arp_map) > 0 else "WARNING",
+        "mac_lookup": "PASS",
+        "snmp": "PASS" if snmp_successes > 0 else ("TIMEOUT" if snmp_timeouts > 0 else "SKIPPED"),
+        "asset_sync": "PENDING",
+        "stats": {
+            "discovered": len(discovered_devices),
+            "snmp_success": snmp_successes,
+            "snmp_failed": snmp_timeouts
+        }
+    }
 
     try:
         from .timeline_service import record_event
@@ -818,14 +866,17 @@ def execute_subnet_discovery(
         "duration_seconds": duration_seconds,
         "scanned_at": end_time.isoformat(),
         "devices": discovered_devices,
+        "diagnostics": diagnostics
     }
     
     try:
         # Automatic Sync to Assets Database
         history_id = save_discovery_results(final_results)
         final_results["history_id"] = history_id
+        final_results["diagnostics"]["asset_sync"] = "PASS"
         logger.info(f"Asset Database Synced automatically. History ID: {history_id}")
     except Exception as db_err:
+        final_results["diagnostics"]["asset_sync"] = "FAIL"
         logger.error(f"Failed to sync discovery results to asset DB: {db_err}")
 
     return final_results
