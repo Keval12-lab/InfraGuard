@@ -44,7 +44,9 @@ import MetricCard from "../components/common/MetricCard";
 import PageHeader from "../components/common/PageHeader";
 import SectionHeader from "../components/common/SectionHeader";
 import StatusChip from "../components/common/StatusChip";
-import { useSubnetDetection, useStartDiscoveryScan } from "../hooks/useDiscovery";
+import NetworkIdentityCard from "../components/discovery/NetworkIdentityCard";
+import NetworkQualityCard from "../components/discovery/NetworkQualityCard";
+import { useSubnetDetection, useStartDiscoveryScan, useNetworkQuality } from "../hooks/useDiscovery";
 import { cidrFormSchema } from "../schemas/discoverySchema";
 
 const WORKFLOW_STEPS = [
@@ -63,7 +65,15 @@ export default function DiscoveryPage() {
     data: detectedSubnetData,
     isLoading: isDetecting,
     refetch: refetchSubnet,
+    isRefetching: isRefetchingSubnet,
   } = useSubnetDetection();
+  
+  const {
+    data: networkQualityData,
+    isLoading: isDetectingQuality,
+    refetch: refetchQuality,
+    isRefetching: isRefetchingQuality,
+  } = useNetworkQuality();
   const scanMutation = useStartDiscoveryScan();
 
   // React Hook Form with Zod Validation
@@ -279,96 +289,26 @@ export default function DiscoveryPage() {
           </Card>
         </Grid>
 
-        {/* Local Network Context Card */}
+        {/* Network Context & Quality Cards */}
         <Grid item xs={12} md={5}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              border: "1px solid",
-              borderColor: "divider",
-              height: "100%",
-              bgcolor: "background.paper",
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <SectionHeader
-                title="Local Interface Info"
-                description="Detected system network adapter context."
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3, height: "100%" }}>
+            <Box sx={{ flex: 1 }}>
+              <NetworkIdentityCard 
+                data={detectedSubnetData} 
+                isLoading={isDetecting} 
+                isRefetching={isRefetchingSubnet} 
+                onRefresh={refetchSubnet} 
               />
-              <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    py: 1,
-                    borderBottom: "1px dashed",
-                    borderColor: "divider",
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Active Interface IP:
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 600, fontFamily: "monospace" }}
-                  >
-                    {isDetecting
-                      ? "Detecting..."
-                      : detectedSubnetData?.local_ip || "Not Detected"}
-                  </Typography>
-                </Box>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    py: 1,
-                    borderBottom: "1px dashed",
-                    borderColor: "divider",
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Detected Subnet CIDR:
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 600, fontFamily: "monospace" }}
-                  >
-                    {isDetecting
-                      ? "Detecting..."
-                      : detectedSubnetData?.detected_cidr || "None"}
-                  </Typography>
-                </Box>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    py: 1,
-                    borderBottom: "1px dashed",
-                    borderColor: "divider",
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    Subnet Mask:
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 600, fontFamily: "monospace" }}
-                  >
-                    {detectedSubnetData?.subnet_mask || "255.255.255.0"}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ display: "flex", justifyContent: "space-between", py: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Engine Status:
-                  </Typography>
-                  <StatusChip status="HEALTHY" label="ICMP Engine Ready" />
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <NetworkQualityCard 
+                data={networkQualityData} 
+                isLoading={isDetectingQuality} 
+                isRefetching={isRefetchingQuality} 
+                onRefresh={refetchQuality} 
+              />
+            </Box>
+          </Box>
         </Grid>
       </Grid>
 
