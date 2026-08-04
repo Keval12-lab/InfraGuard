@@ -111,56 +111,50 @@ export default function EnterpriseDiscoveryTable({ devices }) {
       {/* Toolbar */}
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 3, alignItems: "center", justifyContent: "space-between" }}>
         <TextField
-          size="small"
-          placeholder="Search devices..."
+          placeholder="Search devices, IP, MAC, hostname... (Press / to search)"
           value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setPage(0);
-          }}
+          onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+          size="small"
+          sx={{ minWidth: 340, flexGrow: 1 }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
+                <SearchIcon color="action" fontSize="small" />
               </InputAdornment>
             ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <Chip label="⌘K" size="small" variant="outlined" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700 }} />
+              </InputAdornment>
+            )
           }}
-          sx={{ minWidth: 300, bgcolor: "background.paper" }}
         />
-        
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Typography variant="body2" color="text.secondary">
-            Filter:
-          </Typography>
-          <Chip 
-            label={filterType} 
-            color="primary" 
-            variant="outlined" 
-            deleteIcon={<FilterListIcon />}
-            onDelete={handleFilterClick}
-            onClick={handleFilterClick}
-          />
-          <Menu anchorEl={filterMenuAnchor} open={Boolean(filterMenuAnchor)} onClose={handleFilterClose}>
-            {["All", "Routers", "PC", "Printer", "Unknown", "Offline", "Healthy"].map((f) => (
-              <MenuItem key={f} onClick={() => handleFilterSelect(f)} selected={filterType === f}>
-                {f}
-              </MenuItem>
-            ))}
-          </Menu>
+        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 0.5 }}>
+          {["All", "Online", "Needs Attention", "Offline", "Routers", "PC", "Printer"].map((type) => (
+            <Chip
+              key={type}
+              label={type}
+              clickable
+              color={filterType === type ? "primary" : "default"}
+              variant={filterType === type ? "filled" : "outlined"}
+              onClick={() => handleFilterSelect(type)}
+              sx={{ fontWeight: 600, borderRadius: 2 }}
+            />
+          ))}
         </Stack>
       </Box>
 
       {/* Table */}
-      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
+      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
         <Table sx={{ minWidth: 950 }}>
-          <TableHead sx={{ bgcolor: "background.default" }}>
+          <TableHead sx={{ bgcolor: "background.paper" }}>
             <TableRow>
               {renderSortableHeadCell("status", "Status")}
               {renderSortableHeadCell("hostname", "Device Name")}
-              {renderSortableHeadCell("ip_address", "IP")}
-              {renderSortableHeadCell("vendor", "Brand")}
-              {renderSortableHeadCell("mac_address", "MAC")}
+              {renderSortableHeadCell("ip_address", "IP Address")}
+              {renderSortableHeadCell("device_type", "Type")}
               <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>Verification</TableCell>
+              <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>Latency</TableCell>
               <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>Last Seen</TableCell>
               <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>Actions</TableCell>
             </TableRow>
