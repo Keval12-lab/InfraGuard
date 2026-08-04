@@ -176,7 +176,12 @@ export default function TopologyPage() {
 
     // Endpoints (Level 3)
     endpoints.forEach((ep, idx) => {
-      const step = 1000 / (endpoints.length + 1);
+      const maxPerRow = 7;
+      const row = Math.floor(idx / maxPerRow);
+      const col = idx % maxPerRow;
+      const countInRow = Math.min(endpoints.length - row * maxPerRow, maxPerRow);
+      const step = 1000 / (countInRow + 1);
+      
       initialNodes.push({
         ...ep,
         level: 3,
@@ -184,8 +189,8 @@ export default function TopologyPage() {
         ram: ep.status === "Offline" ? "0%" : "28%",
         latency: ep.status === "Offline" ? "Timed Out" : "4 ms",
         uptime: ep.status === "Offline" ? "0 Days" : "15 Days",
-        defaultX: (idx + 1) * step,
-        defaultY: 370,
+        defaultX: (col + 1) * step,
+        defaultY: 370 + row * 110,
       });
     });
 
@@ -383,21 +388,19 @@ export default function TopologyPage() {
     interactionActions.handleNodeMouseLeave();
   };
 
-  // Node Icons
+  // Node Icons (Enterprise Emoji System)
   const getDeviceIcon = (type) => {
     const t = type?.toLowerCase() || "";
-    if (t.includes("wan")) return <PublicIcon sx={{ color: "#38BDF8", fontSize: 24 }} />;
-    if (t.includes("firewall"))
-      return <SecurityIcon sx={{ color: "#EF4444", fontSize: 24 }} />;
-    if (t.includes("router"))
-      return <RouterIcon sx={{ color: "#38BDF8", fontSize: 24 }} />;
-    if (t.includes("switch"))
-      return <SettingsInputHdmiIcon sx={{ color: "#F59E0B", fontSize: 24 }} />;
-    if (t.includes("printer"))
-      return <PrintIcon sx={{ color: "#A855F7", fontSize: 24 }} />;
-    if (t.includes("server") || t.includes("nas"))
-      return <StorageIcon sx={{ color: "#10B981", fontSize: 24 }} />;
-    return <ComputerIcon sx={{ color: "#94A3B8", fontSize: 24 }} />;
+    if (t.includes("wan")) return "🌐";
+    if (t.includes("firewall")) return "🧱";
+    if (t.includes("router") || t.includes("gateway")) return "📡";
+    if (t.includes("switch")) return "🔀";
+    if (t.includes("printer")) return "🖨️";
+    if (t.includes("server") || t.includes("nas")) return "🗄️";
+    if (t.includes("mobile") || t.includes("phone")) return "📱";
+    if (t.includes("laptop")) return "💻";
+    if (t.includes("unknown") || t.includes("not available")) return "❓";
+    return "🖥️";
   };
 
   const getStatusColor = (status) => {
@@ -889,6 +892,7 @@ export default function TopologyPage() {
                         {/* Highlight Outer ring */}
                         {(isHighlighted || isSelected) && (
                           <circle
+                            cy="-12"
                             r="28"
                             fill="none"
                             stroke={isSelected ? "#3B82F6" : "#06B6D4"}
@@ -901,37 +905,71 @@ export default function TopologyPage() {
 
                         {/* Status Ring */}
                         <circle
+                          cy="-12"
                           r="22"
                           fill="#111827"
                           stroke={statusColor}
                           strokeWidth="3"
+                          style={{ filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.5))" }}
                         />
 
-                        {/* Centered Vector Icon */}
-                        <g transform="translate(-12, -12)">
-                          {getDeviceIcon(node.device_type)}
-                        </g>
+                        {/* Emoji Icon */}
+                        <text
+                          y="-4"
+                          textAnchor="middle"
+                          fontSize="22"
+                          style={{ pointerEvents: "none" }}
+                        >
+                          {getDeviceIcon(node.device_type || node.hostname)}
+                        </text>
+
+                        {/* Labels Box */}
+                        <rect
+                          x="-60"
+                          y="18"
+                          width="120"
+                          height="52"
+                          rx="6"
+                          fill="rgba(17, 24, 39, 0.85)"
+                          stroke="#374151"
+                          strokeWidth="1"
+                        />
 
                         {/* Text labels */}
                         <text
-                          y="35"
+                          y="32"
                           textAnchor="middle"
                           fill="#F9FAFB"
                           fontSize="11"
                           fontWeight="700"
                           style={{ pointerEvents: "none" }}
                         >
-                          {node.hostname}
+                          {(node.hostname && node.hostname !== "Unknown" && node.hostname !== "Not Available")
+                            ? (node.hostname.length > 18 ? node.hostname.substring(0, 15) + "..." : node.hostname)
+                            : "Unknown Device"}
                         </text>
 
                         <text
-                          y="47"
+                          y="46"
                           textAnchor="middle"
                           fill="#9CA3AF"
-                          fontSize="9"
+                          fontSize="10"
+                          fontWeight="600"
                           style={{ pointerEvents: "none" }}
                         >
                           {node.ip_address}
+                        </text>
+                        
+                        <text
+                          y="60"
+                          textAnchor="middle"
+                          fill="#6B7280"
+                          fontSize="9"
+                          style={{ pointerEvents: "none" }}
+                        >
+                          {(node.device_type && node.device_type !== "Unknown" && node.device_type !== "Not Available")
+                            ? (node.device_type.length > 20 ? node.device_type.substring(0, 18) + "..." : node.device_type)
+                            : ((node.vendor && node.vendor !== "Unknown" && node.vendor !== "Not Available") ? node.vendor : "Vendor Unknown")}
                         </text>
                       </g>
                     );
