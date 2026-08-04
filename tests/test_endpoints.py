@@ -5,6 +5,7 @@ import json
 # Insert backend directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "backend"))
 
+# pyrefly: ignore [missing-import]
 from app import create_app
 
 def test_endpoints():
