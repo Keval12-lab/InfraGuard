@@ -24,12 +24,7 @@ import RadioGroup from "@mui/material/RadioGroup";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Stepper from "@mui/material/Stepper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useForm, Controller } from "react-hook-form";
@@ -46,6 +41,7 @@ import MetricCard from "../components/common/MetricCard";
 import StatusChip from "../components/common/StatusChip";
 import NetworkIdentityCard from "../components/discovery/NetworkIdentityCard";
 import NetworkQualityCard from "../components/discovery/NetworkQualityCard";
+import EnterpriseDiscoveryTable from "../components/discovery/EnterpriseDiscoveryTable";
 import { useSubnetDetection, useStartDiscoveryScan, useNetworkQuality } from "../hooks/useDiscovery";
 import { cidrFormSchema } from "../schemas/discoverySchema";
 
@@ -413,112 +409,7 @@ export default function DiscoveryPage() {
         )}
 
         {scanResult && scanResult.devices.length > 0 && (
-          <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
-            <Table sx={{ minWidth: 750 }}>
-              <TableHead sx={{ bgcolor: "background.default" }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>
-                    Status
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>
-                    IP Address
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>
-                    Hostname
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>
-                    Device Name
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>
-                    Vendor
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>
-                    Device Type
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: "text.primary" }}>
-                    Last Seen
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {scanResult.devices.map((dev) => {
-                  const isReachable = dev.reachable !== undefined ? dev.reachable : true;
-                  const statusChipVal = isReachable ? "Healthy" : "Offline";
-                  const hostnameVal =
-                    dev.hostname && dev.hostname !== "Not Available"
-                      ? dev.hostname
-                      : "Not Available";
-                  const devNameVal =
-                    dev.device_name && dev.device_name !== "Not Available"
-                      ? dev.device_name
-                      : "Not Available";
-                  const vendorVal =
-                    dev.vendor && dev.vendor !== "Local Host" ? dev.vendor : "Unknown";
-                  const devTypeVal = dev.device_type || "Unknown";
-                  const lastSeenVal =
-                    dev.last_seen || dev.discovery_timestamp || dev.discovered_at;
-
-                  return (
-                    <TableRow key={dev.ip_address} hover>
-                      <TableCell>
-                        <StatusChip status={statusChipVal} label={statusChipVal} />
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          fontFamily: "monospace",
-                          fontWeight: 600,
-                          fontSize: "0.9rem",
-                        }}
-                      >
-                        {dev.ip_address}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          color:
-                            hostnameVal === "Not Available"
-                              ? "text.secondary"
-                              : "text.primary",
-                        }}
-                      >
-                        {hostnameVal}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          color:
-                            devNameVal === "Not Available"
-                              ? "text.secondary"
-                              : "text.primary",
-                        }}
-                      >
-                        {devNameVal}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          color:
-                            vendorVal === "Unknown" ? "text.secondary" : "text.primary",
-                        }}
-                      >
-                        {vendorVal}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={devTypeVal}
-                          size="small"
-                          variant="outlined"
-                          sx={{ fontWeight: 600, fontSize: "0.72rem" }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ fontSize: "0.85rem", color: "text.secondary" }}>
-                        {lastSeenVal
-                          ? new Date(lastSeenVal).toLocaleString()
-                          : "Not Available"}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <EnterpriseDiscoveryTable devices={scanResult.devices} />
         )}
       </IGSection>
     </IGPage>
