@@ -493,6 +493,25 @@ def init_db():
         );
     """)
 
+    # Table 16: revoked_tokens (Persistent JWT Logout Blacklist)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS revoked_tokens (
+            token_signature TEXT PRIMARY KEY,
+            user_email TEXT NOT NULL,
+            revoked_at TEXT NOT NULL
+        );
+    """)
+
+    # Table 17: failed_login_attempts (Brute-Force & Lockout Audit Store)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS failed_login_attempts (
+            ip_address TEXT PRIMARY KEY,
+            failed_count INTEGER DEFAULT 1,
+            last_failed_at TEXT NOT NULL,
+            locked_until TEXT
+        );
+    """)
+
     conn.commit()
     conn.close()
     logger.info(f"[SQLite Init] Database schema initialized at {DB_PATH}")
