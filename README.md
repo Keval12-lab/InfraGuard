@@ -31,8 +31,17 @@ Most monitoring tools tell you: *"There is a problem."*
 2. **Simplicity First:** End-users are IT support engineers, not software developers. The UI uses plain, human language (e.g., "Find Devices" instead of "ICMP Subnet Discovery").
 3. **Progressive Disclosure:** Display the minimal required information (Device Name, Status, IP, Brand) by default. Hide advanced evidence (OID, Interfaces, Topology) inside detail drawers.
 4. **Troubleshooting First & Fix Suggestions (USP):** The goal is not just inventory, it's finding root causes and offering next steps. (e.g., Laptop Offline -> "Possible Reason: Wi-Fi disconnected" -> "What You Can Try: Check Wi-Fi connection, Scan again").
-5. **Actionable UI:** Never show a warning without telling the user what to do next. Every screen must answer exactly one question.
-6. **Backend-Only Intelligence:** All complex logic (Risk Engine, Classification, Correlation, SNMP rules) lives purely in the backend. The frontend is strictly for presentation.
+5. **Actionable UI:** Never show a warning without telling the user what to do next. Every screen must answer exactly three questions: *What is wrong? Why did it happen? What should I try next?*
+6. **Backend-Only Intelligence (4-Layer Pipeline):** All analysis is cleanly separated in the backend:
+   ```
+   [1. Collectors (Ping, MAC, SNMP, LLDP, CDP)]
+                     ↓
+   [2. Evidence & Confidence Engine (0%, 40%, 80%, 100%)]
+                     ↓
+   [3. Recommendation Engine (Troubleshooting & Fix Suggestions)]
+                     ↓
+   [4. API Layer → Frontend Display Only]
+   ```
 7. **Never Guess:** **If information cannot be verified, it will be marked as "Not Available" instead of showing incorrect data.** We do not guess status or fabricate switches.
 
 ---

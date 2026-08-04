@@ -27,6 +27,8 @@ from ..config import (
 
 from .mac_vendor_service import resolve_vendor_by_mac, classify_device
 from .discovery_engine.snmp import SNMPDiscovery
+from .discovery_engine.confidence_engine import ConfidenceEngine
+from .discovery_engine.recommendation_engine import RecommendationEngine
 from ..database.db import save_discovery_results
 
 logger = logging.getLogger("infraguard.discovery")
@@ -826,44 +828,13 @@ def execute_subnet_discovery(
             logger.warning(f"SNMP thread pool error: {snmp_err}")
 
     for dev in discovered_devices:
-        has_icmp = dev.get("reachable", False)
-        has_mac = bool(dev.get("mac_address"))
-        has_snmp = bool(dev.get("snmp") and dev["snmp"].get("status") == "success")
+        score, label, reasons = ConfidenceEngine.evaluate(dev)
+        dev["confidence_score"] = score
+        dev["confidence_label"] = label
+        dev["verification_reasons"] = reasons
+        dev["troubleshooting"] = RecommendationEngine.get_troubleshooting(dev)
 
-        if has_icmp and has_mac and has_snmp:
-            dev["confidence_score"] = 100
-            dev["confidence_label"] = "Verified (ICMP + MAC + SNMP)"
-        elif has_icmp and has_mac:
-            dev["confidence_score"] = 80
-            dev["confidence_label"] = "Verified by Ping & MAC"
-        elif has_icmp:
-            dev["confidence_score"] = 40
-            dev["confidence_label"] = "Limited Info (Ping Only)"
-        else:
-            dev["confidence_score"] = 0
-            dev["confidence_label"] = "Not Verified / Offline"
-
-        if dev.get("reachable", True):
-            dev["troubleshooting"] = {
-                "status_summary": "Device is online and responding normally.",
-                "possible_reasons": [],
-                "what_you_can_try": ["No action required. Connection is healthy."]
-            }
-        else:
-            dev["troubleshooting"] = {
-                "status_summary": "Device is not responding on the network.",
-                "possible_reasons": [
-                    "Device is powered off or sleeping",
-                    "Network cable is unplugged or Wi-Fi is disconnected",
-                    "Local firewall is blocking incoming ping probes"
-                ],
-                "what_you_can_try": [
-                    "Check device power status",
-                    "Check network cable or Wi-Fi connection",
-                    "Try pinging the device again",
-                    "Scan the network again"
-                ]
-            }
+    network_health = RecommendationEngine.calculate_network_health(discovered_devices)
 
     discovered_devices.sort(key=lambda d: [int(x) for x in d["ip_address"].split(".")])
     end_time = datetime.now(timezone.utc)
@@ -905,6 +876,7 @@ def execute_subnet_discovery(
         "unreachable_count": len(target_ips) - len(discovered_devices),
         "duration_seconds": duration_seconds,
         "scanned_at": end_time.isoformat(),
+        "network_health": network_health,
         "devices": discovered_devices,
         "diagnostics": diagnostics
     }
