@@ -6,9 +6,9 @@
 ![Flask](https://img.shields.io/badge/Flask-3.x-000000.svg)
 ![Release](https://img.shields.io/badge/Release-v1.0.1-green.svg)
 
-> **"If InfraGuard cannot verify it, InfraGuard will not display it as fact."**
+> **"InfraGuard helps IT teams quickly find network problems, understand what happened, and know what to do next — using only verified information presented in simple language."**
 
-InfraGuard is an evidence-based IT Infrastructure Visibility and Troubleshooting Platform designed for small and medium businesses. Its primary objective is not just to display data, but to help IT engineers accurately discover assets, identify root causes, and resolve infrastructure issues using verified evidence. The platform prioritizes accuracy, simplicity, security, and actionable insights over feature quantity. Every piece of information shown to the user must be backed by real evidence, every issue must include guidance, and every advanced capability should remain securely encapsulated within the backend.
+InfraGuard is an evidence-based IT Infrastructure Visibility and Troubleshooting Platform designed for small and medium businesses. Its primary objective is to help IT support engineers and system administrators manage their networks without requiring deep networking expertise. The platform prioritizes accuracy, simplicity, security, and actionable insights over feature quantity. 
 
 **Simple for users. Powerful behind the scenes.**
 
@@ -19,9 +19,10 @@ InfraGuard is an evidence-based IT Infrastructure Visibility and Troubleshooting
 1. **Evidence Over Assumptions:** Never show data that cannot be verified. We never fabricate topology switches or guess offline statuses. Every node is backed by ICMP/ARP/SNMP evidence.
 2. **Simplicity First:** End-users are IT support engineers, not software developers. The UI uses plain, human language (e.g., "Find Devices" instead of "ICMP Subnet Discovery").
 3. **Progressive Disclosure:** Display the minimal required information (Device Name, Status, IP, Brand) by default. Hide advanced evidence (OID, Interfaces, Topology) inside detail drawers.
-4. **Troubleshooting First:** The goal is not just inventory, it's finding root causes. (e.g., Device Offline -> Ping Gateway: PASS -> ARP: FAIL -> Action: Check LAN Cable).
+4. **Troubleshooting First & Fix Suggestions (USP):** The goal is not just inventory, it's finding root causes and offering next steps. (e.g., Laptop Offline -> "Possible Reason: Wi-Fi disconnected" -> "What You Can Try: Check Wi-Fi connection, Scan again").
 5. **Actionable UI:** Never show a warning without telling the user what to do next. Every screen must answer exactly one question.
 6. **Backend-Only Intelligence:** All complex logic (Risk Engine, Classification, Correlation, SNMP rules) lives purely in the backend. The frontend is strictly for presentation.
+7. **Never Guess:** **If information cannot be verified, it will be marked as "Not Available" instead of showing incorrect data.** We do not guess status or fabricate switches.
 
 ---
 

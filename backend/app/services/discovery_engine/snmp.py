@@ -25,6 +25,16 @@ class SNMPDiscovery(IDiscoveryModule):
         "ifOperStatus": "1.3.6.1.2.1.2.2.1.8",
         "ifName": "1.3.6.1.2.1.31.1.1.1.1" # IF-MIB
     }
+    
+    LLDP_OIDS = {
+        "lldpRemSysName": "1.0.8802.1.1.2.1.4.1.1.9",
+        "lldpRemPortId": "1.0.8802.1.1.2.1.4.1.1.7"
+    }
+
+    CDP_OIDS = {
+        "cdpCacheDeviceId": "1.3.6.1.4.1.9.9.23.1.2.1.1.6",
+        "cdpCacheDevicePort": "1.3.6.1.4.1.9.9.23.1.2.1.1.7"
+    }
 
     def discover(self, ip: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -188,5 +198,58 @@ class SNMPDiscovery(IDiscoveryModule):
                             interfaces[idx]["type"] = str(t_val)
                             
             result["interfaces"] = list(interfaces.values())
+            
+        # Phase 4: LLDP / CDP Neighbor Discovery
+        neighbors = []
+        
+        # LLDP
+        succ, lldp_names, _ = client.walk(self.LLDP_OIDS["lldpRemSysName"])
+        if succ and lldp_names:
+            succ, lldp_ports, _ = client.walk(self.LLDP_OIDS["lldpRemPortId"])
+            for full_oid, rem_name in lldp_names.items():
+                idx_parts = full_oid.split(".")[-3:] # [timeMark, localPortNum, index]
+                if len(idx_parts) >= 2:
+                    local_port_idx = idx_parts[1]
+                    idx_suffix = ".".join(idx_parts)
+                    
+                    rem_port = lldp_ports.get(f'{self.LLDP_OIDS["lldpRemPortId"]}.{idx_suffix}', "Unknown")
+                    
+                    local_port_name = f"Port {local_port_idx}"
+                    if local_port_idx in interfaces:
+                        local_port_name = interfaces[local_port_idx]["name"]
+                        
+                    neighbors.append({
+                        "neighbor_name": str(rem_name),
+                        "local_port": str(local_port_name),
+                        "neighbor_port": str(rem_port),
+                        "method": "LLDP",
+                        "confidence": 100
+                    })
+                    
+        # CDP
+        succ, cdp_names, _ = client.walk(self.CDP_OIDS["cdpCacheDeviceId"])
+        if succ and cdp_names:
+            succ, cdp_ports, _ = client.walk(self.CDP_OIDS["cdpCacheDevicePort"])
+            for full_oid, rem_name in cdp_names.items():
+                idx_parts = full_oid.split(".")[-2:] # [ifIndex, deviceIndex]
+                if len(idx_parts) >= 2:
+                    local_port_idx = idx_parts[0]
+                    idx_suffix = ".".join(idx_parts)
+                    
+                    rem_port = cdp_ports.get(f'{self.CDP_OIDS["cdpCacheDevicePort"]}.{idx_suffix}', "Unknown")
+                    
+                    local_port_name = f"Port {local_port_idx}"
+                    if local_port_idx in interfaces:
+                        local_port_name = interfaces[local_port_idx]["name"]
+                        
+                    neighbors.append({
+                        "neighbor_name": str(rem_name),
+                        "local_port": str(local_port_name),
+                        "neighbor_port": str(rem_port),
+                        "method": "CDP",
+                        "confidence": 100
+                    })
+                    
+        result["neighbors"] = neighbors
             
         return result
