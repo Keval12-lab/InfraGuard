@@ -20,6 +20,7 @@ class Settings:
     ping_retry_count: int
     security_hsts_enabled: bool
     security_csp: str
+    jwt_secret: str
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -42,4 +43,5 @@ class Settings:
             ping_retry_count=int(os.getenv("PING_RETRY_COUNT", "1")),
             security_hsts_enabled=(hsts_str == "true"),
             security_csp=csp_str,
+            jwt_secret=os.getenv("JWT_SECRET", "infraguard-enterprise-pilot-secret-key-2026-secure"),
         )

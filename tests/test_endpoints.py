@@ -36,14 +36,40 @@ def test_endpoints():
     assert "uptime_seconds" in data
     assert data["build"] == "production-ready-v1.0.0"
 
-    # 4. Test /api/v1/auth/login
+    # 4. Security Audit Test: Auth Login with PBKDF2 Hash
     response = client.post("/api/v1/auth/login", json={"email": "admin@infraguard.local", "password": "AdminPassword123!"})
     assert response.status_code == 200
-    data = json.loads(response.data)
-    assert data["status"] == "success"
-    assert "token" in data
-    assert data["user"]["role"] == "Admin"
+    admin_data = json.loads(response.data)
+    admin_token = admin_data["token"]
+    assert admin_data["user"]["role"] == "Admin"
+
+    # 5. Security Audit Test: Unauthenticated Call (Expect 401)
+    response = client.get("/api/v1/auth/me")
+    assert response.status_code == 401
+
+    # 6. Security Audit Test: Authenticated /me Call (Expect 200)
+    response = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {admin_token}"})
+    assert response.status_code == 200
+
+    # 7. Security Audit Test: Invalid Signature Token (Expect 401)
+    response = client.get("/api/v1/auth/me", headers={"Authorization": "Bearer invalid.signature.token"})
+    assert response.status_code == 401
+
+    # 8. Security Audit Test: Technician Role RBAC Blocking (Expect 403)
+    tech_resp = client.post("/api/v1/auth/login", json={"email": "tech@infraguard.local", "password": "TechPassword123!"})
+    tech_token = json.loads(tech_resp.data)["token"]
+    response = client.get("/api/v1/auth/admin-only", headers={"Authorization": f"Bearer {tech_token}"})
+    assert response.status_code == 403
+
+    # 9. Security Audit Test: Admin Role Access Granted (Expect 200)
+    response = client.get("/api/v1/auth/admin-only", headers={"Authorization": f"Bearer {admin_token}"})
+    assert response.status_code == 200
+
+    # 10. Security Audit Test: Logout Token Revocation (Expect 401 on reuse)
+    client.post("/api/v1/auth/logout", headers={"Authorization": f"Bearer {tech_token}"})
+    reused_resp = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {tech_token}"})
+    assert reused_resp.status_code == 401
 
 if __name__ == "__main__":
     test_endpoints()
-    print("All python API diagnostics tests PASSED successfully!")
+    print("All python API diagnostics tests & SECURITY AUDIT CHECKS PASSED successfully!")
