@@ -62,38 +62,20 @@ export function calculateHierarchicalLayout(topoData, nodePositions = {}) {
   });
 
   // Core Switches (Level 2)
-  const switchCount = switches.length > 0 ? switches.length : 1;
-  if (switches.length === 0 && endpoints.length > 0) {
+  switches.forEach((sw, idx) => {
+    const switchCount = switches.length;
+    const step = 1000 / (switchCount + 1);
     initialNodes.push({
-      id: "virtual_switch",
-      hostname: "Core-Switch-01",
-      ip_address: "192.168.29.2",
-      device_type: "Switch",
-      status: "Healthy",
-      vendor: "Cisco (Virtual)",
+      ...sw,
       level: 2,
-      cpu: "18%",
-      ram: "45%",
-      latency: "1 ms",
-      uptime: "12 Days",
-      defaultX: 500,
+      cpu: "25%",
+      ram: "50%",
+      latency: "2 ms",
+      uptime: "90 Days",
+      defaultX: (idx + 1) * step,
       defaultY: 250,
     });
-  } else {
-    switches.forEach((sw, idx) => {
-      const step = 1000 / (switchCount + 1);
-      initialNodes.push({
-        ...sw,
-        level: 2,
-        cpu: "25%",
-        ram: "50%",
-        latency: "2 ms",
-        uptime: "90 Days",
-        defaultX: (idx + 1) * step,
-        defaultY: 250,
-      });
-    });
-  }
+  });
 
   // Endpoints (Level 3)
   endpoints.forEach((ep, idx) => {
@@ -148,12 +130,15 @@ export function calculateHierarchicalLayout(topoData, nodePositions = {}) {
     });
   });
 
-  // Switches -> Endpoints
+  // Switches or Routers -> Endpoints
   l3Endpoints.forEach((e) => {
-    const parentSwitch = l2Switches[0] || { id: "virtual_switch" };
+    const parentNode = l2Switches.length > 0 
+      ? l2Switches[0] 
+      : (l1Routers[0] || { id: "internet_wan" });
+      
     calculatedLinks.push({
-      id: `${parentSwitch.id}-${e.id}`,
-      source: parentSwitch.id,
+      id: `${parentNode.id}-${e.id}`,
+      source: parentNode.id,
       target: e.id,
       linkType: e.device_type?.toLowerCase().includes("wireless")
         ? "Wireless"
